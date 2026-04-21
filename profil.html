@@ -15,16 +15,21 @@
   <nav class="navbar">
     <div class="container">
       <a href="/" class="nav-logo">Matteo Lemesre</a>
-      <ul class="nav-links">
-        <li><a href="/cours/seconde">Cours</a></li>
-        <li><a href="/annales">Annales</a></li>
-        <li><a href="/recherche">Recherche</a></li>
-      </ul>
+      <ul class="nav-links" id="nav-links"></ul>
       <div class="nav-actions">
         <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
           <span id="theme-icon">☽</span>
         </button>
-        <a href="/profil" class="btn btn-ghost btn-sm active">Profil</a>
+        <div id="nav-guest" style="display:none;gap:.5rem;">
+          <a href="/connexion" class="btn btn-ghost btn-sm">Connexion</a>
+          <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+        </div>
+        <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
+          <span id="nav-prenom" style="font-size:.875rem;font-weight:500;color:var(--text-muted);"></span>
+          <a href="/profil" class="btn btn-ghost btn-sm active">Profil</a>
+          <a href="/admin" class="btn btn-ghost btn-sm" id="nav-admin" style="display:none">Admin</a>
+          <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
+        </div>
       </div>
     </div>
   </nav>
@@ -463,6 +468,7 @@
     })
   </script>
 
+  <script src="/js/navbar.js"></script>
   <script src="/js/auth.js"></script>
   <script>
     /* onAuthReady est déjà défini ci-dessus ;

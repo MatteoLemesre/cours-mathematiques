@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -l \"chatbot.js\\\\|auth.js\\\\|admin-guard.js\\\\|theme.js\" /Users/matteolemesre/Documents/GitHub/cours-mathematiques/*.html /Users/matteolemesre/Documents/GitHub/cours-mathematiques/admin/*.html)"
+      "Bash(grep -l \"chatbot.js\\\\|auth.js\\\\|admin-guard.js\\\\|theme.js\" /Users/matteolemesre/Documents/GitHub/cours-mathematiques/*.html /Users/matteolemesre/Documents/GitHub/cours-mathematiques/admin/*.html)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/matteolemesre/Documents/GitHub/cours-mathematiques/**)",
+      "Bash(done)"
     ]
   }
 }

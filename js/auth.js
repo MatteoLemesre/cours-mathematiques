@@ -38,9 +38,10 @@ document.body.style.visibility = 'hidden'
     window.authSession = session
     window.authProfile = profil || {}
 
-    /* Met à jour le lien Profil dans la navbar avec le prénom */
-    const profilLink = document.querySelector('.nav-actions a[href="/profil"]')
-    if (profilLink && profil?.prenom) profilLink.textContent = profil.prenom
+    /* Met à jour la navbar selon l'état connecté */
+    if (typeof window.setupNavbar === 'function') {
+      window.setupNavbar(session, profil || {})
+    }
 
     document.body.style.visibility = ''
 

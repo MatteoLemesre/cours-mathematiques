@@ -107,21 +107,19 @@
   <nav class="navbar">
     <div class="container">
       <a href="/" class="nav-logo">Matteo Lemesre</a>
-      <ul class="nav-links">
-        <li><a href="/" class="active">Accueil</a></li>
-        <li><a href="/annales">Annales</a></li>
-        <li><a href="/recherche">Recherche</a></li>
-      </ul>
+      <ul class="nav-links" id="nav-links"></ul>
       <div class="nav-actions">
         <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
           <span id="theme-icon">☽</span>
         </button>
-        <div id="nav-guest" style="display:flex;gap:.5rem;">
+        <div id="nav-guest" style="display:none;gap:.5rem;">
           <a href="/connexion" class="btn btn-ghost btn-sm">Connexion</a>
           <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
         </div>
         <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
-          <a href="/profil" class="btn btn-ghost btn-sm" id="nav-prenom">Mon profil</a>
+          <span id="nav-prenom" style="font-size:.875rem;font-weight:500;color:var(--text-muted);"></span>
+          <a href="/profil" class="btn btn-ghost btn-sm">Profil</a>
+          <a href="/admin" class="btn btn-ghost btn-sm" id="nav-admin" style="display:none">Admin</a>
           <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
         </div>
       </div>
@@ -193,6 +191,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/js/supabase.js"></script>
+  <script src="/js/navbar.js"></script>
   <script src="/js/chatbot.js"></script>
   <script>
     const CLASSES = [
@@ -207,24 +206,17 @@
       const { data: { session } } = await sb.auth.getSession()
 
       if (session) {
-        document.getElementById('nav-guest').style.display = 'none'
-        document.getElementById('nav-user').style.display = 'flex'
-
         const { data: profil } = await sb
-          .from('profils').select('prenom,classe').eq('id', session.user.id).single()
+          .from('profils').select('prenom,classe,role').eq('id', session.user.id).single()
 
-        if (profil?.prenom) document.getElementById('nav-prenom').textContent = profil.prenom
+        window.setupNavbar(session, profil || {})
+
         if (profil?.classe) {
           const ctaPrimary = document.getElementById('cta-primary')
           ctaPrimary.href = `/cours/${profil.classe}`
           ctaPrimary.textContent = 'Accéder à mes cours'
         }
       }
-
-      document.getElementById('btn-deconnexion')?.addEventListener('click', async () => {
-        await sb.auth.signOut()
-        window.location.reload()
-      })
 
       await loadClasses()
     }

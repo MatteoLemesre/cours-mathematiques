@@ -39,6 +39,12 @@ document.body.style.visibility = 'hidden'
     window.authSession = session
     window.authProfile = profil
 
+    /* Affiche le prénom dans la sidebar admin */
+    const prenomEl = document.getElementById('admin-prenom')
+    if (prenomEl && profil?.prenom) prenomEl.textContent = profil.prenom
+    const sidebarUser = document.getElementById('admin-sidebar-user')
+    if (sidebarUser) sidebarUser.style.display = ''
+
     document.body.style.visibility = ''
 
     if (typeof window.onAuthReady === 'function') {
