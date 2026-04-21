@@ -1,4 +1,4 @@
 const SUPABASE_URL     = 'https://hhefzmqrirgmwcsvteup.supabase.co'
-const SUPABASE_ANON_KEY = 'REMPLACE_PAR_TA_NOUVELLE_CLE'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZWZ6bXFyaXJnbXdjc3Z0ZXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTQ1NzIsImV4cCI6MjA5MjI3MDU3Mn0.68yyFTMxlpWPHPNBWijL3VLU8I7BMl5Fs0oghMrlcu4'
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
