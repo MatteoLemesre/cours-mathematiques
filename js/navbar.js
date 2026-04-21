@@ -31,7 +31,7 @@
   }
 
   window.showGuestNavbar = function () {
-    renderLinks(li('/', 'Accueil') + li('/#classes', 'Démo'))
+    renderLinks('')
     const g = document.getElementById('nav-guest')
     const u = document.getElementById('nav-user')
     if (g) g.style.display = 'flex'
