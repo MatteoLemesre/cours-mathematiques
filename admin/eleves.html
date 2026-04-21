@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Élèves — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    body { padding-top: 0; }
+    .admin-wrap { display: flex; min-height: 100vh; }
+    .admin-sidebar { width:220px;flex-shrink:0;background:#1A1A1A;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:thin; }
+    .admin-logo { padding:1.25rem 1.125rem .875rem;font-weight:700;font-size:.9375rem;color:#EBEBEB;text-decoration:none;display:block;border-bottom:1px solid rgba(255,255,255,.07); }
+    .admin-logo:hover { text-decoration:none;color:#fff; }
+    .admin-logo-sub { display:block;font-size:.6875rem;font-weight:400;color:#555;margin-top:.2rem;text-transform:uppercase;letter-spacing:.06em; }
+    .admin-nav { flex:1;padding:.625rem; }
+    .admin-nav-item { display:flex;align-items:center;gap:.5rem;padding:.5rem .625rem;border-radius:6px;font-size:.875rem;font-family:var(--font);color:#888;text-decoration:none;transition:background .15s,color .15s;margin-bottom:2px;border:none;background:none;cursor:pointer;width:100%;text-align:left; }
+    .admin-nav-item:hover { background:rgba(255,255,255,.06);color:#EBEBEB;text-decoration:none; }
+    .admin-nav-item.active { background:rgba(255,255,255,.1);color:#fff;font-weight:600; }
+    .admin-nav-icon { font-size:.875rem;width:1.125rem;text-align:center;flex-shrink:0; }
+    .admin-sidebar-footer { padding:.625rem;border-top:1px solid rgba(255,255,255,.07); }
+    .admin-main { flex:1;min-width:0;background:var(--bg); }
+    .admin-topbar { padding:1.75rem 2rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--border); }
+    .admin-topbar h1 { font-size:1.375rem; }
+    .admin-content { padding:1.5rem 2rem 3rem; }
+
+    .class-tabs { display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:1.25rem; }
+    .class-tab { padding:.4rem .875rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all var(--transition);font-family:var(--font); }
+    .class-tab:hover { border-color:var(--accent);color:var(--accent); }
+    .class-tab.active { background:var(--accent);border-color:var(--accent);color:#fff; }
+
+    .progress-cell { min-width:100px; }
+    .progress-mini { height:4px;background:var(--border);border-radius:999px;overflow:hidden;margin-top:2px; }
+    .progress-mini-bar { height:100%;background:var(--accent);border-radius:999px; }
+
+    /* Modal */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:flex;align-items:flex-start;justify-content:flex-end;padding:1rem;opacity:0;visibility:hidden;transition:all .2s; }
+    .modal-overlay.open { opacity:1;visibility:visible; }
+    .detail-modal {
+      background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+      padding:0;width:100%;max-width:520px;box-shadow:var(--shadow-lg);
+      overflow:hidden;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;
+      transform:translateX(20px);transition:transform .2s;
+    }
+    .modal-overlay.open .detail-modal { transform:none; }
+    .detail-modal-header { padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
+    .detail-modal-body { padding:1.5rem;overflow-y:auto;flex:1; }
+    .detail-section { margin-bottom:1.5rem; }
+    .detail-section-title { font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:.75rem; }
+    .detail-row { display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.875rem; }
+    .detail-row:last-child { border-bottom:none; }
+    .event-row { display:flex;justify-content:space-between;font-size:.8125rem;padding:.35rem 0;border-bottom:1px solid var(--border);color:var(--text-muted); }
+    .event-row:last-child { border-bottom:none; }
+    .event-type-label { font-weight:500;color:var(--text); }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <a href="/admin" class="admin-logo">Matteo Lemesre<span class="admin-logo-sub">Administration</span></a>
+    <nav class="admin-nav">
+      <a href="/admin"         class="admin-nav-item"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/cours"   class="admin-nav-item"><span class="admin-nav-icon">📖</span> Cours</a>
+      <a href="/admin/annales" class="admin-nav-item"><span class="admin-nav-icon">📝</span> Annales</a>
+      <a href="/admin/eleves"  class="admin-nav-item active"><span class="admin-nav-icon">👥</span> Élèves</a>
+      <a href="/admin/stats"   class="admin-nav-item"><span class="admin-nav-icon">📈</span> Stats</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="/" class="admin-nav-item"><span class="admin-nav-icon">↗</span> Voir le site</a>
+      <button class="admin-nav-item" id="btn-logout"><span class="admin-nav-icon">🚪</span> Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div>
+        <h1>Élèves</h1>
+        <p style="font-size:.875rem;color:var(--text-muted);margin-top:.2rem;" id="eleves-count"></p>
+      </div>
+    </div>
+    <div class="admin-content">
+      <div class="class-tabs" id="class-tabs">
+        <button class="class-tab active" data-classe="">Tous</button>
+        <button class="class-tab" data-classe="seconde">Seconde</button>
+        <button class="class-tab" data-classe="premiere">Première</button>
+        <button class="class-tab" data-classe="terminale">Terminale</button>
+        <button class="class-tab" data-classe="mpsi">MPSI</button>
+        <button class="class-tab" data-classe="mp">MP</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Prénom</th><th>Email</th><th>Classe</th>
+              <th>Cours lus</th><th>TD faits</th>
+              <th>Dernière activité</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="eleves-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">
+              <div class="spinner" style="margin:0 auto;"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="detail-modal">
+    <div class="detail-modal-header">
+      <h3 id="modal-name">Élève</h3>
+      <button class="btn btn-ghost btn-sm" id="btn-close-modal">✕</button>
+    </div>
+    <div class="detail-modal-body" id="modal-body">
+      <div style="text-align:center;padding:2rem;"><div class="spinner" style="margin:0 auto;"></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  const CLASS_LABELS = { seconde:'Seconde', premiere:'Première', terminale:'Terminale', mpsi:'MPSI', mp:'MP' }
+  const EVENT_LABELS = {
+    cours_vue:'Cours consulté', cours_dl:'Cours téléchargé', td_vue:'TD consulté',
+    corrige_vue:'Correction vue', fiche_vue:'Fiche vue', fiche_dl:'Fiche téléchargée',
+    annale_vue:'Annale consultée', annale_sujet_dl:'Sujet téléchargé', annale_corrige_dl:'Corrigé téléchargé',
+  }
+
+  let allEleves    = []
+  let coursTotal   = {} // classe → count
+  let progData     = {} // userId → { cours_lu_count, td_fait_count }
+  let lastActivity = {} // userId → date
+  let activeClass  = ''
+
+  function formatDate (d) {
+    if (!d) return '—'
+    return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})
+  }
+
+  window.onAuthReady = async function (session, profil) {
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await sb.auth.signOut(); window.location.replace('/connexion')
+    })
+    document.getElementById('btn-close-modal').addEventListener('click', closeModal)
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal-overlay')) closeModal()
+    })
+
+    document.getElementById('class-tabs').addEventListener('click', e => {
+      const tab = e.target.closest('.class-tab'); if (!tab) return
+      document.querySelectorAll('.class-tab').forEach(t => t.classList.remove('active'))
+      tab.classList.add('active'); activeClass = tab.dataset.classe
+      renderTable()
+    })
+
+    await loadData()
+  }
+
+  async function loadData () {
+    const [
+      { data: eleves },
+      { data: cours },
+      { data: prog },
+      { data: events },
+    ] = await Promise.all([
+      sb.from('profils').select('id,prenom,email,classe,created_at').order('created_at', { ascending: false }),
+      sb.from('cours').select('classe').eq('est_publie', true),
+      sb.from('progression').select('user_id,cours_id,cours_lu,td_fait'),
+      sb.from('events').select('user_id,created_at').order('created_at', { ascending: false }),
+    ])
+
+    allEleves = eleves || []
+
+    // Nb cours publiés par classe
+    ;(cours || []).forEach(c => { coursTotal[c.classe] = (coursTotal[c.classe] || 0) + 1 })
+
+    // Progression par user
+    ;(prog || []).forEach(p => {
+      if (!progData[p.user_id]) progData[p.user_id] = { lu: 0, td: 0 }
+      if (p.cours_lu) progData[p.user_id].lu++
+      if (p.td_fait)  progData[p.user_id].td++
+    })
+
+    // Dernière activité
+    ;(events || []).forEach(e => {
+      if (!lastActivity[e.user_id]) lastActivity[e.user_id] = e.created_at
+    })
+
+    document.getElementById('eleves-count').textContent = `${allEleves.length} élève${allEleves.length !== 1 ? 's' : ''}`
+    renderTable()
+  }
+
+  function pct (num, total) { return total ? Math.round(num / total * 100) : 0 }
+
+  function renderTable () {
+    const filtered = activeClass ? allEleves.filter(e => e.classe === activeClass) : allEleves
+    const tbody = document.getElementById('eleves-tbody')
+
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">Aucun élève</td></tr>'
+      return
+    }
+
+    tbody.innerHTML = filtered.map(el => {
+      const pd      = progData[el.id]     || { lu: 0, td: 0 }
+      const total   = coursTotal[el.classe] || 0
+      const pctLu   = pct(pd.lu, total)
+      const pctTd   = pct(pd.td, total)
+      const lastAct = lastActivity[el.id]
+
+      return `<tr>
+        <td style="font-weight:500;">${el.prenom || '—'}</td>
+        <td style="color:var(--text-muted);font-size:.875rem;">${el.email || '—'}</td>
+        <td><span class="badge badge-muted">${CLASS_LABELS[el.classe] || el.classe || '—'}</span></td>
+        <td class="progress-cell">
+          <div style="font-size:.8125rem;color:var(--text-muted);">${pd.lu}/${total} (${pctLu}%)</div>
+          <div class="progress-mini"><div class="progress-mini-bar" style="width:${pctLu}%"></div></div>
+        </td>
+        <td class="progress-cell">
+          <div style="font-size:.8125rem;color:var(--text-muted);">${pd.td}/${total} (${pctTd}%)</div>
+          <div class="progress-mini"><div class="progress-mini-bar" style="width:${pctTd}%;background:#16a34a;"></div></div>
+        </td>
+        <td style="color:var(--text-muted);font-size:.875rem;">${formatDate(lastAct)}</td>
+        <td><button class="btn btn-secondary btn-sm btn-detail" data-id="${el.id}">Voir</button></td>
+      </tr>`
+    }).join('')
+
+    document.querySelectorAll('.btn-detail').forEach(btn => {
+      btn.addEventListener('click', () => openModal(btn.dataset.id))
+    })
+  }
+
+  async function openModal (userId) {
+    const eleve = allEleves.find(e => e.id === userId)
+    document.getElementById('modal-name').textContent = eleve?.prenom || 'Élève'
+    document.getElementById('modal-overlay').classList.add('open')
+    document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:2rem;"><div class="spinner" style="margin:0 auto;"></div></div>'
+
+    const [{ data: prog }, { data: events }] = await Promise.all([
+      sb.from('progression').select('cours_lu,td_fait,cours_id').eq('user_id', userId),
+      sb.from('events').select('type,created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(10),
+    ])
+
+    // Load course titles for progression
+    const coursIds = (prog || []).map(p => p.cours_id)
+    let coursMap = {}
+    if (coursIds.length) {
+      const { data: cours } = await sb.from('cours').select('id,titre,classe').in('id', coursIds)
+      ;(cours || []).forEach(c => { coursMap[c.id] = c })
+    }
+
+    const pd    = progData[userId]  || { lu: 0, td: 0 }
+    const total = coursTotal[eleve?.classe] || 0
+
+    document.getElementById('modal-body').innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-title">Profil</div>
+        <div class="detail-row"><span>Prénom</span><strong>${eleve?.prenom || '—'}</strong></div>
+        <div class="detail-row"><span>Email</span><span style="color:var(--text-muted);">${eleve?.email || '—'}</span></div>
+        <div class="detail-row"><span>Classe</span><span class="badge badge-muted">${CLASS_LABELS[eleve?.classe] || eleve?.classe || '—'}</span></div>
+        <div class="detail-row"><span>Inscription</span><span style="color:var(--text-muted);">${formatDate(eleve?.created_at)}</span></div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Progression — ${pd.lu}/${total} cours lus · ${pd.td}/${total} TD faits</div>
+        ${(prog || []).length ? (prog || []).map(p => {
+          const c = coursMap[p.cours_id]
+          return `<div class="detail-row">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;">${c?.titre || p.cours_id}</span>
+            <span style="display:flex;gap:.375rem;flex-shrink:0;">
+              <span class="badge ${p.cours_lu ? 'badge-green' : 'badge-muted'}" style="font-size:.7rem;">${p.cours_lu ? '✓ Lu' : '○ Non lu'}</span>
+              <span class="badge ${p.td_fait  ? 'badge-green' : 'badge-muted'}" style="font-size:.7rem;">${p.td_fait  ? '✓ TD' : '○ TD'}</span>
+            </span>
+          </div>`}).join('')
+        : '<p style="color:var(--text-muted);font-size:.875rem;">Aucune progression enregistrée.</p>'}
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">Historique récent (10 derniers events)</div>
+        ${(events || []).length ? events.map(e => `
+          <div class="event-row">
+            <span class="event-type-label">${EVENT_LABELS[e.type] || e.type}</span>
+            <span>${formatDate(e.created_at)}</span>
+          </div>`).join('')
+        : '<p style="color:var(--text-muted);font-size:.875rem;">Aucune activité.</p>'}
+      </div>`
+  }
+
+  function closeModal () {
+    document.getElementById('modal-overlay').classList.remove('open')
+  }
+</script>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# ── Environnement & clés ──────────────────────────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# ── Vercel ────────────────────────────────────────────────────
+.vercel/
+
+# ── Node (si besoin plus tard) ────────────────────────────────
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Éditeurs ──────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Fichiers temporaires ───────────────────────────────────────
+*.tmp
+*.bak
+*.swp
+*~

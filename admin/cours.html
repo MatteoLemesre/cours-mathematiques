@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cours — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    body { padding-top: 0; }
+    .admin-wrap { display: flex; min-height: 100vh; }
+
+    .admin-sidebar {
+      width: 220px; flex-shrink: 0; background: #1A1A1A;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; scrollbar-width: thin;
+    }
+    .admin-logo {
+      padding: 1.25rem 1.125rem .875rem;
+      font-weight: 700; font-size: .9375rem;
+      color: #EBEBEB; text-decoration: none; display: block;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .admin-logo:hover { text-decoration: none; color: #fff; }
+    .admin-logo-sub {
+      display: block; font-size: .6875rem; font-weight: 400;
+      color: #555; margin-top: .2rem;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .admin-nav { flex: 1; padding: .625rem; }
+    .admin-nav-item {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .5rem .625rem; border-radius: 6px;
+      font-size: .875rem; font-family: var(--font);
+      color: #888; text-decoration: none;
+      transition: background .15s, color .15s;
+      margin-bottom: 2px; border: none; background: none;
+      cursor: pointer; width: 100%; text-align: left;
+    }
+    .admin-nav-item:hover { background: rgba(255,255,255,.06); color: #EBEBEB; text-decoration: none; }
+    .admin-nav-item.active { background: rgba(255,255,255,.1); color: #fff; font-weight: 600; }
+    .admin-nav-icon { font-size: .875rem; width: 1.125rem; text-align: center; flex-shrink: 0; }
+    .admin-sidebar-footer {
+      padding: .625rem; border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .admin-main { flex: 1; min-width: 0; background: var(--bg); }
+    .admin-topbar {
+      padding: 1.75rem 2rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-topbar h1 { font-size: 1.375rem; }
+    .admin-content { padding: 1.5rem 2rem 3rem; }
+
+    /* Class tabs */
+    .class-tabs {
+      display: flex; gap: .25rem; flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .class-tab {
+      padding: .4rem .875rem;
+      border-radius: var(--radius-sm);
+      font-size: .875rem; font-weight: 500;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted);
+      cursor: pointer; transition: all var(--transition);
+      font-family: var(--font);
+    }
+    .class-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .class-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* Actions in table */
+    .table-actions { display: flex; gap: .375rem; }
+
+    /* Modal confirm */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1.5rem; opacity: 0; visibility: hidden; transition: all var(--transition); }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 400px; box-shadow: var(--shadow-lg); }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+
+  <aside class="admin-sidebar">
+    <a href="/admin" class="admin-logo">
+      Matteo Lemesre
+      <span class="admin-logo-sub">Administration</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="/admin"         class="admin-nav-item"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/cours"   class="admin-nav-item active"><span class="admin-nav-icon">📖</span> Cours</a>
+      <a href="/admin/annales" class="admin-nav-item"><span class="admin-nav-icon">📝</span> Annales</a>
+      <a href="/admin/eleves"  class="admin-nav-item"><span class="admin-nav-icon">👥</span> Élèves</a>
+      <a href="/admin/stats"   class="admin-nav-item"><span class="admin-nav-icon">📈</span> Stats</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="/" class="admin-nav-item"><span class="admin-nav-icon">↗</span> Voir le site</a>
+      <button class="admin-nav-item" id="btn-logout"><span class="admin-nav-icon">🚪</span> Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1>Cours</h1>
+      <a href="/admin/cours/nouveau" class="btn btn-primary btn-sm">+ Nouveau chapitre</a>
+    </div>
+    <div class="admin-content">
+      <!-- Tabs par classe -->
+      <div class="class-tabs" id="class-tabs">
+        <button class="class-tab active" data-classe="">Tous</button>
+        <button class="class-tab" data-classe="seconde">Seconde</button>
+        <button class="class-tab" data-classe="premiere">Première</button>
+        <button class="class-tab" data-classe="terminale">Terminale</button>
+        <button class="class-tab" data-classe="mpsi">MPSI</button>
+        <button class="class-tab" data-classe="mp">MP</button>
+      </div>
+
+      <div id="cours-count" style="font-size:.875rem;color:var(--text-muted);margin-bottom:.875rem;"></div>
+
+      <div class="table-wrap">
+        <table id="cours-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Classe</th>
+              <th>Thème</th>
+              <th>Ordre</th>
+              <th>Statut</th>
+              <th>Blocs</th>
+              <th>Exos</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="cours-tbody">
+            <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">
+              <div class="spinner" style="margin:0 auto;"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirm suppression -->
+<div class="modal-overlay" id="modal-del">
+  <div class="modal">
+    <h3 style="margin-bottom:.75rem;">Supprimer ce cours ?</h3>
+    <p style="color:var(--text-muted);margin-bottom:1.5rem;">Cette action est irréversible. Tous les blocs et exercices associés seront supprimés.</p>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+      <button class="btn btn-secondary" id="modal-del-cancel">Annuler</button>
+      <button class="btn btn-danger" id="modal-del-confirm">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  const CLASS_LABELS = {
+    seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+  }
+  const THEME_COLORS = {
+    'Analyse': 'badge-blue', 'Algèbre': 'badge-purple', 'Géométrie': 'badge-green',
+    'Probabilités': 'badge-orange', 'Statistiques': 'badge-orange', 'Arithmétique': 'badge-red',
+  }
+  function themeColor (t) { return THEME_COLORS[t] || 'badge-muted' }
+
+  let allCours   = []
+  let activeClass = ''
+  let pendingDeleteId = null
+
+  window.onAuthReady = async function (session, profil) {
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await sb.auth.signOut(); window.location.replace('/connexion')
+    })
+
+    // Class tabs
+    document.getElementById('class-tabs').addEventListener('click', e => {
+      const tab = e.target.closest('.class-tab')
+      if (!tab) return
+      document.querySelectorAll('.class-tab').forEach(t => t.classList.remove('active'))
+      tab.classList.add('active')
+      activeClass = tab.dataset.classe
+      renderTable()
+    })
+
+    // Delete modal
+    document.getElementById('modal-del-cancel').addEventListener('click', () => {
+      document.getElementById('modal-del').classList.remove('open')
+      pendingDeleteId = null
+    })
+    document.getElementById('modal-del-confirm').addEventListener('click', async () => {
+      if (!pendingDeleteId) return
+      await sb.from('cours').delete().eq('id', pendingDeleteId)
+      document.getElementById('modal-del').classList.remove('open')
+      allCours = allCours.filter(c => c.id !== pendingDeleteId)
+      pendingDeleteId = null
+      renderTable()
+    })
+
+    await loadCours()
+  }
+
+  async function loadCours () {
+    const [{ data: cours }, { data: blocs }, { data: exercices }] = await Promise.all([
+      sb.from('cours').select('*').order('classe').order('ordre'),
+      sb.from('blocs').select('cours_id'),
+      sb.from('exercices').select('cours_id'),
+    ])
+
+    const blocsCount = {}
+    ;(blocs || []).forEach(b => { blocsCount[b.cours_id] = (blocsCount[b.cours_id] || 0) + 1 })
+    const exosCount = {}
+    ;(exercices || []).forEach(e => { exosCount[e.cours_id] = (exosCount[e.cours_id] || 0) + 1 })
+
+    allCours = (cours || []).map(c => ({
+      ...c,
+      _blocs: blocsCount[c.id] || 0,
+      _exos:  exosCount[c.id]  || 0,
+    }))
+
+    renderTable()
+  }
+
+  function renderTable () {
+    const filtered = activeClass ? allCours.filter(c => c.classe === activeClass) : allCours
+    document.getElementById('cours-count').textContent =
+      `${filtered.length} cours${filtered.length !== 1 ? '' : ''}`
+
+    if (!filtered.length) {
+      document.getElementById('cours-tbody').innerHTML =
+        '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Aucun cours</td></tr>'
+      return
+    }
+
+    document.getElementById('cours-tbody').innerHTML = filtered.map(c => `
+      <tr>
+        <td style="font-weight:500;">
+          <a href="/admin/cours/${c.slug}">${c.titre}</a>
+        </td>
+        <td><span class="badge badge-muted">${CLASS_LABELS[c.classe] || c.classe}</span></td>
+        <td>${c.theme ? `<span class="badge ${themeColor(c.theme)}">${c.theme}</span>` : '—'}</td>
+        <td style="color:var(--text-muted);">${c.ordre}</td>
+        <td>
+          <span class="badge ${c.est_publie ? 'badge-green' : 'badge-muted'}">
+            ${c.est_publie ? 'Publié' : 'Brouillon'}
+          </span>
+        </td>
+        <td style="color:var(--text-muted);">${c._blocs}</td>
+        <td style="color:var(--text-muted);">${c._exos}</td>
+        <td>
+          <div class="table-actions">
+            <a href="/admin/cours/${c.slug}" class="btn btn-secondary btn-sm">Éditer</a>
+            <button class="btn btn-ghost btn-sm btn-toggle-pub" data-id="${c.id}" data-pub="${c.est_publie}">
+              ${c.est_publie ? 'Dépublier' : 'Publier'}
+            </button>
+            <button class="btn btn-danger btn-sm btn-del" data-id="${c.id}">✕</button>
+          </div>
+        </td>
+      </tr>`).join('')
+
+    // Bind actions
+    document.querySelectorAll('.btn-toggle-pub').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id  = btn.dataset.id
+        const pub = btn.dataset.pub === 'true'
+        await sb.from('cours').update({ est_publie: !pub }).eq('id', id)
+        const c = allCours.find(x => x.id === id)
+        if (c) c.est_publie = !pub
+        renderTable()
+      })
+    })
+
+    document.querySelectorAll('.btn-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pendingDeleteId = btn.dataset.id
+        document.getElementById('modal-del').classList.add('open')
+      })
+    })
+  }
+</script>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html>

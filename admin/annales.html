@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annales — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    body { padding-top: 0; }
+    .admin-wrap { display: flex; min-height: 100vh; }
+    .admin-sidebar {
+      width: 220px; flex-shrink: 0; background: #1A1A1A;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; scrollbar-width: thin;
+    }
+    .admin-logo { padding: 1.25rem 1.125rem .875rem; font-weight: 700; font-size: .9375rem; color: #EBEBEB; text-decoration: none; display: block; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .admin-logo:hover { text-decoration: none; color: #fff; }
+    .admin-logo-sub { display: block; font-size: .6875rem; font-weight: 400; color: #555; margin-top: .2rem; text-transform: uppercase; letter-spacing: .06em; }
+    .admin-nav { flex: 1; padding: .625rem; }
+    .admin-nav-item { display: flex; align-items: center; gap: .5rem; padding: .5rem .625rem; border-radius: 6px; font-size: .875rem; font-family: var(--font); color: #888; text-decoration: none; transition: background .15s, color .15s; margin-bottom: 2px; border: none; background: none; cursor: pointer; width: 100%; text-align: left; }
+    .admin-nav-item:hover { background: rgba(255,255,255,.06); color: #EBEBEB; text-decoration: none; }
+    .admin-nav-item.active { background: rgba(255,255,255,.1); color: #fff; font-weight: 600; }
+    .admin-nav-icon { font-size: .875rem; width: 1.125rem; text-align: center; flex-shrink: 0; }
+    .admin-sidebar-footer { padding: .625rem; border-top: 1px solid rgba(255,255,255,.07); }
+    .admin-main { flex: 1; min-width: 0; background: var(--bg); }
+    .admin-topbar { padding: 1.75rem 2rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+    .admin-topbar h1 { font-size: 1.375rem; }
+    .admin-content { padding: 1.5rem 2rem 3rem; }
+
+    /* Side panel */
+    .panel-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.35);
+      z-index: 200; opacity: 0; visibility: hidden; transition: all .2s;
+    }
+    .panel-overlay.open { opacity: 1; visibility: visible; }
+    .side-panel {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 440px; background: var(--surface); z-index: 201;
+      display: flex; flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .25s ease;
+      overflow-y: auto;
+    }
+    .panel-overlay.open .side-panel { transform: translateX(0); }
+    .side-panel-header {
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .side-panel-header h2 { font-size: 1.125rem; }
+    .side-panel-body { padding: 1.5rem; flex: 1; }
+    .side-panel-footer {
+      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+      display: flex; gap: .625rem; justify-content: flex-end; flex-shrink: 0;
+    }
+    .form-row { margin-bottom: 1rem; }
+    .form-row label { display: block; font-size: .875rem; font-weight: 500; color: var(--text-muted); margin-bottom: .35rem; }
+
+    .table-actions { display: flex; gap: .375rem; }
+    .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999; padding: .625rem 1.125rem; border-radius: 8px; font-size: .875rem; font-weight: 500; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.2); animation: fadeIn .2s ease; }
+    .toast-success { background: #16a34a; } .toast-error { background: #dc2626; }
+
+    @media (max-width: 640px) { .side-panel { width: 100%; } }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <a href="/admin" class="admin-logo">Matteo Lemesre<span class="admin-logo-sub">Administration</span></a>
+    <nav class="admin-nav">
+      <a href="/admin"         class="admin-nav-item"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/cours"   class="admin-nav-item"><span class="admin-nav-icon">📖</span> Cours</a>
+      <a href="/admin/annales" class="admin-nav-item active"><span class="admin-nav-icon">📝</span> Annales</a>
+      <a href="/admin/eleves"  class="admin-nav-item"><span class="admin-nav-icon">👥</span> Élèves</a>
+      <a href="/admin/stats"   class="admin-nav-item"><span class="admin-nav-icon">📈</span> Stats</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="/" class="admin-nav-item"><span class="admin-nav-icon">↗</span> Voir le site</a>
+      <button class="admin-nav-item" id="btn-logout"><span class="admin-nav-icon">🚪</span> Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1>Annales</h1>
+      <button class="btn btn-primary btn-sm" id="btn-nouveau">+ Nouveau sujet</button>
+    </div>
+    <div class="admin-content">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Titre</th><th>Type</th><th>Concours</th><th>Classe</th><th>Année</th><th>Statut</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sujets-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">
+              <div class="spinner" style="margin:0 auto;"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Side panel -->
+<div class="panel-overlay" id="panel-overlay">
+  <div class="side-panel" id="side-panel">
+    <div class="side-panel-header">
+      <h2 id="panel-title">Nouveau sujet</h2>
+      <button class="btn btn-ghost btn-sm" id="btn-close-panel">✕</button>
+    </div>
+    <div class="side-panel-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <label>Titre *</label>
+        <input type="text" id="edit-titre" class="input" placeholder="ex : Bac S 2023 — Polynômes">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div class="form-row">
+          <label>Type</label>
+          <select id="edit-type" class="input">
+            <option value="">— Choisir —</option>
+            <option value="bac">Bac</option>
+            <option value="concours">Concours</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Concours</label>
+          <input type="text" id="edit-concours" class="input" placeholder="ex : CentraleSupélec">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div class="form-row">
+          <label>Classe</label>
+          <select id="edit-classe" class="input">
+            <option value="">— Toutes —</option>
+            <option value="seconde">Seconde</option>
+            <option value="premiere">Première</option>
+            <option value="terminale">Terminale</option>
+            <option value="mpsi">MPSI</option>
+            <option value="mp">MP</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Année</label>
+          <input type="number" id="edit-annee" class="input" placeholder="2023" min="2000" max="2099">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Thèmes (séparés par des virgules)</label>
+        <input type="text" id="edit-themes" class="input" placeholder="ex : Analyse, Algèbre">
+      </div>
+      <div class="form-row">
+        <label>Slug (URL)</label>
+        <input type="text" id="edit-slug" class="input" placeholder="auto-généré depuis le titre">
+      </div>
+      <div class="form-row">
+        <label>PDF du sujet</label>
+        <input type="file" id="upload-sujet-pdf" accept="application/pdf" class="input">
+        <div class="pdf-file-info" id="info-sujet-pdf" style="display:none;font-size:.8125rem;margin-top:.3rem;color:var(--text-muted);"></div>
+      </div>
+      <div class="form-row">
+        <label>PDF du corrigé</label>
+        <input type="file" id="upload-corrige-pdf" accept="application/pdf" class="input">
+        <div class="pdf-file-info" id="info-corrige-pdf" style="display:none;font-size:.8125rem;margin-top:.3rem;color:var(--text-muted);"></div>
+      </div>
+    </div>
+    <div class="side-panel-footer">
+      <button class="btn btn-secondary" id="btn-save-draft">Brouillon</button>
+      <button class="btn btn-primary"   id="btn-save-pub">Publier</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  const CLASS_LABELS = { seconde:'Seconde', premiere:'Première', terminale:'Terminale', mpsi:'MPSI', mp:'MP' }
+  const TYPE_LABELS  = { bac:'Bac', concours:'Concours' }
+  const TYPE_BADGES  = { bac:'badge-blue', concours:'badge-purple' }
+
+  let allSujets = []
+  let editingId = null
+
+  function slugify (s) {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-')
+  }
+  function showToast (msg, type='success') {
+    const t = document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg
+    document.body.appendChild(t); setTimeout(()=>t.remove(),3000)
+  }
+  function formatDate (d) { return d ? new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}) : '—' }
+
+  window.onAuthReady = async function (session, profil) {
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await sb.auth.signOut(); window.location.replace('/connexion')
+    })
+
+    document.getElementById('btn-nouveau').addEventListener('click', () => openPanel(null))
+    document.getElementById('btn-close-panel').addEventListener('click', closePanel)
+    document.getElementById('panel-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('panel-overlay')) closePanel()
+    })
+
+    document.getElementById('edit-titre').addEventListener('input', function () {
+      const s = document.getElementById('edit-slug')
+      if (!s._userEdited) s.value = slugify(this.value)
+    })
+    document.getElementById('edit-slug').addEventListener('input', function () { this._userEdited = true })
+
+    document.getElementById('upload-sujet-pdf').addEventListener('change', e => uploadAnPDF(e, 'sujet_pdf_url', 'info-sujet-pdf'))
+    document.getElementById('upload-corrige-pdf').addEventListener('change', e => uploadAnPDF(e, 'corrige_pdf_url', 'info-corrige-pdf'))
+
+    document.getElementById('btn-save-draft').addEventListener('click', () => saveSujet(false))
+    document.getElementById('btn-save-pub').addEventListener('click',   () => saveSujet(true))
+
+    await loadSujets()
+  }
+
+  async function loadSujets () {
+    const { data } = await sb.from('sujets').select('*').order('annee', { ascending: false })
+    allSujets = data || []
+    renderTable()
+  }
+
+  function renderTable () {
+    const tbody = document.getElementById('sujets-tbody')
+    if (!allSujets.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">Aucun sujet</td></tr>'
+      return
+    }
+    tbody.innerHTML = allSujets.map(s => `
+      <tr>
+        <td style="font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.titre}</td>
+        <td>${s.type ? `<span class="badge ${TYPE_BADGES[s.type]||'badge-muted'}">${TYPE_LABELS[s.type]||s.type}</span>` : '—'}</td>
+        <td style="color:var(--text-muted);font-size:.875rem;">${s.concours || '—'}</td>
+        <td>${s.classe ? `<span class="badge badge-muted">${CLASS_LABELS[s.classe]||s.classe}</span>` : '—'}</td>
+        <td style="color:var(--text-muted);">${s.annee || '—'}</td>
+        <td><span class="badge ${s.est_publie ? 'badge-green' : 'badge-muted'}">${s.est_publie ? 'Publié' : 'Brouillon'}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn-secondary btn-sm btn-edit" data-id="${s.id}">Éditer</button>
+            <button class="btn btn-ghost btn-sm btn-toggle" data-id="${s.id}" data-pub="${s.est_publie}">${s.est_publie ? 'Dépublier' : 'Publier'}</button>
+            <button class="btn btn-danger btn-sm btn-del" data-id="${s.id}">✕</button>
+          </div>
+        </td>
+      </tr>`).join('')
+
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', () => openPanel(allSujets.find(s => s.id === btn.dataset.id)))
+    })
+    document.querySelectorAll('.btn-toggle').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const pub = btn.dataset.pub === 'true'
+        await sb.from('sujets').update({ est_publie: !pub }).eq('id', btn.dataset.id)
+        await loadSujets()
+      })
+    })
+    document.querySelectorAll('.btn-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Supprimer ce sujet ?')) return
+        await sb.from('sujets').delete().eq('id', btn.dataset.id)
+        allSujets = allSujets.filter(s => s.id !== btn.dataset.id)
+        renderTable()
+      })
+    })
+  }
+
+  function openPanel (sujet) {
+    editingId = sujet?.id || null
+    document.getElementById('panel-title').textContent = sujet ? 'Modifier le sujet' : 'Nouveau sujet'
+    document.getElementById('edit-id').value       = sujet?.id      || ''
+    document.getElementById('edit-titre').value    = sujet?.titre   || ''
+    document.getElementById('edit-type').value     = sujet?.type    || ''
+    document.getElementById('edit-concours').value = sujet?.concours|| ''
+    document.getElementById('edit-classe').value   = sujet?.classe  || ''
+    document.getElementById('edit-annee').value    = sujet?.annee   || ''
+    document.getElementById('edit-themes').value   = (sujet?.themes || []).join(', ')
+    const slugEl = document.getElementById('edit-slug')
+    slugEl.value = sujet?.slug || ''; slugEl._userEdited = !!sujet?.slug
+
+    const infoS = document.getElementById('info-sujet-pdf')
+    const infoC = document.getElementById('info-corrige-pdf')
+    if (sujet?.sujet_pdf_url)   { infoS.textContent = '📄 ' + decodeURIComponent(sujet.sujet_pdf_url.split('/').pop()); infoS.style.display = 'block' }
+    else infoS.style.display = 'none'
+    if (sujet?.corrige_pdf_url) { infoC.textContent = '📄 ' + decodeURIComponent(sujet.corrige_pdf_url.split('/').pop()); infoC.style.display = 'block' }
+    else infoC.style.display = 'none'
+
+    document.getElementById('panel-overlay').classList.add('open')
+  }
+
+  function closePanel () {
+    document.getElementById('panel-overlay').classList.remove('open')
+    editingId = null
+    document.getElementById('upload-sujet-pdf').value   = ''
+    document.getElementById('upload-corrige-pdf').value = ''
+  }
+
+  async function saveSujet (publie) {
+    const titre = document.getElementById('edit-titre').value.trim()
+    if (!titre) { showToast('Le titre est requis', 'error'); return }
+
+    const slug   = document.getElementById('edit-slug').value.trim() || slugify(titre)
+    const themes = document.getElementById('edit-themes').value.split(',').map(t => t.trim()).filter(Boolean)
+
+    const payload = {
+      titre, slug, themes,
+      type:       document.getElementById('edit-type').value    || null,
+      concours:   document.getElementById('edit-concours').value.trim() || null,
+      classe:     document.getElementById('edit-classe').value  || null,
+      annee:      parseInt(document.getElementById('edit-annee').value) || null,
+      est_publie: publie,
+    }
+
+    let savedId = editingId
+    if (editingId) {
+      const { error } = await sb.from('sujets').update(payload).eq('id', editingId)
+      if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    } else {
+      const { data, error } = await sb.from('sujets').insert(payload).select().single()
+      if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+      savedId = data.id; editingId = savedId
+    }
+
+    // Upload PDFs if selected
+    await handlePDFSave('upload-sujet-pdf',   savedId, 'sujet_pdf_url')
+    await handlePDFSave('upload-corrige-pdf', savedId, 'corrige_pdf_url')
+
+    showToast(publie ? 'Sujet publié ✓' : 'Brouillon enregistré ✓')
+    closePanel()
+    await loadSujets()
+  }
+
+  async function handlePDFSave (inputId, sujetId, field) {
+    const file = document.getElementById(inputId).files[0]
+    if (!file) return
+    const tag  = field === 'sujet_pdf_url' ? 'sujet' : 'corrige'
+    const path = `${sujetId}/${tag}.pdf`
+    const { error } = await sb.storage.from('annales-pdf').upload(path, file, { upsert: true })
+    if (error) { showToast('Erreur PDF : ' + error.message, 'error'); return }
+    const { data: { publicUrl } } = sb.storage.from('annales-pdf').getPublicUrl(path)
+    await sb.from('sujets').update({ [field]: publicUrl }).eq('id', sujetId)
+  }
+
+  async function uploadAnPDF (e, field, infoId) {
+    if (!editingId) return // will be handled on save
+    await handlePDFSave(e.target.id, editingId, field)
+    const file = e.target.files[0]
+    if (file) {
+      const el = document.getElementById(infoId)
+      el.textContent = '📄 ' + file.name; el.style.display = 'block'
+    }
+  }
+</script>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html>

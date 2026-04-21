@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    body { padding-top: 0; }
+    .admin-wrap { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .admin-sidebar {
+      width: 220px; flex-shrink: 0;
+      background: #1A1A1A;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; scrollbar-width: thin;
+    }
+    .admin-logo {
+      padding: 1.25rem 1.125rem .875rem;
+      font-weight: 700; font-size: .9375rem;
+      color: #EBEBEB; text-decoration: none; display: block;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .admin-logo:hover { text-decoration: none; color: #fff; }
+    .admin-logo-sub {
+      display: block; font-size: .6875rem; font-weight: 400;
+      color: #555; margin-top: .2rem;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .admin-nav { flex: 1; padding: .625rem .625rem; }
+    .admin-nav-item {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .5rem .625rem; border-radius: 6px;
+      font-size: .875rem; font-family: var(--font);
+      color: #888; text-decoration: none;
+      transition: background .15s, color .15s;
+      margin-bottom: 2px; border: none; background: none;
+      cursor: pointer; width: 100%; text-align: left;
+    }
+    .admin-nav-item:hover { background: rgba(255,255,255,.06); color: #EBEBEB; text-decoration: none; }
+    .admin-nav-item.active { background: rgba(255,255,255,.1); color: #fff; font-weight: 600; }
+    .admin-nav-icon { font-size: .875rem; width: 1.125rem; text-align: center; flex-shrink: 0; }
+    .admin-sidebar-footer {
+      padding: .625rem .625rem;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+
+    /* ── Main ── */
+    .admin-main { flex: 1; min-width: 0; background: var(--bg); display: flex; flex-direction: column; }
+    .admin-topbar {
+      padding: 1.75rem 2rem 0;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem; margin-bottom: 0;
+    }
+    .admin-topbar h1 { font-size: 1.375rem; }
+    .admin-content { padding: 1.75rem 2rem 3rem; }
+
+    /* ── Stats cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card-icon {
+      position: absolute; right: 1rem; top: 1rem;
+      font-size: 1.5rem; opacity: .25;
+    }
+
+    /* ── Tables ── */
+    .tables-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .admin-table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .admin-table-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .9375rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1100px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .tables-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <a href="/admin" class="admin-logo">
+      Matteo Lemesre
+      <span class="admin-logo-sub">Administration</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="/admin"         class="admin-nav-item active"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/cours"   class="admin-nav-item"><span class="admin-nav-icon">📖</span> Cours</a>
+      <a href="/admin/annales" class="admin-nav-item"><span class="admin-nav-icon">📝</span> Annales</a>
+      <a href="/admin/eleves"  class="admin-nav-item"><span class="admin-nav-icon">👥</span> Élèves</a>
+      <a href="/admin/stats"   class="admin-nav-item"><span class="admin-nav-icon">📈</span> Stats</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="/" class="admin-nav-item"><span class="admin-nav-icon">↗</span> Voir le site</a>
+      <button class="admin-nav-item" id="btn-logout"><span class="admin-nav-icon">🚪</span> Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div>
+        <h1>Dashboard</h1>
+        <p style="color:var(--text-muted);font-size:.875rem;margin-top:.2rem;" id="greeting">Bonjour !</p>
+      </div>
+      <span style="font-size:.8125rem;color:var(--text-muted);" id="last-update"></span>
+    </div>
+
+    <div class="admin-content">
+      <!-- Stat cards -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="spinner" style="margin:0 auto;"></div></div>
+      </div>
+
+      <!-- Tables -->
+      <div class="tables-grid">
+        <!-- Derniers élèves -->
+        <div class="admin-table-card">
+          <div class="admin-table-header">Derniers élèves inscrits</div>
+          <div class="table-wrap" style="border:none;border-radius:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Prénom</th>
+                  <th>Classe</th>
+                  <th>Inscription</th>
+                </tr>
+              </thead>
+              <tbody id="table-eleves">
+                <tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text-muted);">Chargement…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top cours vus -->
+        <div class="admin-table-card">
+          <div class="admin-table-header">Top 5 cours les plus vus</div>
+          <div class="table-wrap" style="border:none;border-radius:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Titre</th>
+                  <th>Classe</th>
+                  <th>Vues</th>
+                </tr>
+              </thead>
+              <tbody id="table-cours">
+                <tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text-muted);">Chargement…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  const CLASS_LABELS = {
+    seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+  }
+
+  function formatDate (d) {
+    if (!d) return '—'
+    return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+
+  window.onAuthReady = async function (session, profil) {
+    document.getElementById('greeting').textContent = `Bonjour, ${profil.prenom || 'Admin'} !`
+    document.getElementById('last-update').textContent = `Mis à jour le ${formatDate(new Date().toISOString())}`
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await sb.auth.signOut()
+      window.location.replace('/connexion')
+    })
+
+    await loadStats()
+    await Promise.all([loadDerniersEleves(), loadTopCours()])
+  }
+
+  async function loadStats () {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const monthStart   = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+
+    const [
+      { count: nbEleves },
+      { data: recentEvents },
+      { count: nbPublies },
+      { count: nbDl },
+    ] = await Promise.all([
+      sb.from('profils').select('*', { count: 'exact', head: true }),
+      sb.from('events').select('user_id').gte('created_at', sevenDaysAgo),
+      sb.from('cours').select('*', { count: 'exact', head: true }).eq('est_publie', true),
+      sb.from('events').select('*', { count: 'exact', head: true })
+        .in('type', ['cours_dl', 'fiche_dl']).gte('created_at', monthStart),
+    ])
+
+    const actifs7j = new Set((recentEvents || []).map(e => e.user_id)).size
+
+    const cards = [
+      { label: 'Élèves inscrits',          value: nbEleves  ?? 0, icon: '👥', link: '/admin/eleves' },
+      { label: 'Actifs (7 derniers jours)', value: actifs7j,       icon: '🔥', link: '/admin/stats' },
+      { label: 'Cours publiés',             value: nbPublies ?? 0, icon: '📖', link: '/admin/cours' },
+      { label: 'PDFs téléchargés ce mois',  value: nbDl      ?? 0, icon: '⬇',  link: '/admin/stats' },
+    ]
+
+    document.getElementById('stats-grid').innerHTML = cards.map(c => `
+      <a href="${c.link}" class="stat-card" style="text-decoration:none;color:var(--text);">
+        <div class="stat-card-icon">${c.icon}</div>
+        <div class="stat-label">${c.label}</div>
+        <div class="stat-value">${c.value.toLocaleString('fr-FR')}</div>
+      </a>`).join('')
+  }
+
+  async function loadDerniersEleves () {
+    const { data } = await sb.from('profils')
+      .select('prenom,classe,created_at')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    document.getElementById('table-eleves').innerHTML = data && data.length
+      ? data.map(e => `
+          <tr>
+            <td style="font-weight:500;">${e.prenom || '—'}</td>
+            <td><span class="badge badge-muted">${CLASS_LABELS[e.classe] || e.classe || '—'}</span></td>
+            <td style="color:var(--text-muted);font-size:.875rem;">${formatDate(e.created_at)}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text-muted);">Aucun élève</td></tr>'
+  }
+
+  async function loadTopCours () {
+    const { data: evts } = await sb.from('events').select('cours_id').eq('type', 'cours_vue')
+
+    const countMap = {}
+    ;(evts || []).forEach(e => {
+      if (e.cours_id) countMap[e.cours_id] = (countMap[e.cours_id] || 0) + 1
+    })
+
+    const top5 = Object.entries(countMap)
+      .sort((a, b) => b[1] - a[1]).slice(0, 5)
+
+    if (!top5.length) {
+      document.getElementById('table-cours').innerHTML =
+        '<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text-muted);">Aucune donnée</td></tr>'
+      return
+    }
+
+    const { data: cours } = await sb.from('cours')
+      .select('id,titre,classe')
+      .in('id', top5.map(e => e[0]))
+
+    const coursMap = {}
+    ;(cours || []).forEach(c => { coursMap[c.id] = c })
+
+    document.getElementById('table-cours').innerHTML = top5.map(([id, nb]) => {
+      const c = coursMap[id]
+      return `<tr>
+        <td style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          ${c ? `<a href="/admin/cours/${c.slug || id}">${c.titre}</a>` : id}
+        </td>
+        <td>${c ? `<span class="badge badge-muted">${CLASS_LABELS[c.classe] || c.classe}</span>` : '—'}</td>
+        <td style="font-weight:600;color:var(--accent);">${nb}</td>
+      </tr>`
+    }).join('')
+  }
+</script>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html>

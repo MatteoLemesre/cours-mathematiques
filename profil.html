@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon profil — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/cours/seconde">Cours</a></li>
+        <li><a href="/annales">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <a href="/profil" class="btn btn-ghost btn-sm active">Profil</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container" style="max-width:720px; padding-bottom:3rem;">
+
+      <div class="page-header">
+        <h1 id="page-title">Mon profil</h1>
+        <p id="page-subtitle" style="color:var(--text-muted);"></p>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           Section 1 — Informations personnelles
+      ══════════════════════════════════════════════ -->
+      <section class="card" style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.125rem; margin-bottom:1.5rem;">Informations</h2>
+
+        <!-- Prénom -->
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label for="prenom">Prénom</label>
+          <div style="display:flex; gap:.75rem;">
+            <input type="text" id="prenom" class="input" placeholder="Ton prénom" autocomplete="given-name">
+            <button class="btn btn-secondary btn-sm" id="btn-save-prenom" style="white-space:nowrap;">Enregistrer</button>
+          </div>
+          <span id="msg-prenom" style="font-size:.8125rem; display:none;"></span>
+        </div>
+
+        <hr class="sep" style="margin:1.25rem 0;">
+
+        <!-- Classe -->
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label for="classe">Classe</label>
+          <div style="display:flex; gap:.75rem;">
+            <select id="classe" class="input">
+              <option value="seconde">Seconde</option>
+              <option value="premiere">Première</option>
+              <option value="terminale">Terminale</option>
+              <option value="mpsi">MPSI</option>
+              <option value="mp">MP</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" id="btn-save-classe" style="white-space:nowrap;">Enregistrer</button>
+          </div>
+          <span id="msg-classe" style="font-size:.8125rem; display:none;"></span>
+        </div>
+
+        <hr class="sep" style="margin:1.25rem 0;">
+
+        <!-- Email -->
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label for="email">Adresse email</label>
+          <div style="display:flex; gap:.75rem;">
+            <input type="email" id="email" class="input" placeholder="ton@email.com" autocomplete="email" inputmode="email">
+            <button class="btn btn-secondary btn-sm" id="btn-save-email" style="white-space:nowrap;">Modifier</button>
+          </div>
+          <span id="msg-email" style="font-size:.8125rem; display:none;"></span>
+        </div>
+
+        <hr class="sep" style="margin:1.25rem 0;">
+
+        <!-- Nouveau mot de passe -->
+        <div>
+          <label style="font-size:.875rem; font-weight:500; color:var(--text-muted); display:block; margin-bottom:.375rem;">
+            Nouveau mot de passe
+          </label>
+          <div style="display:flex; flex-direction:column; gap:.75rem;">
+            <input type="password" id="new-password" class="input" placeholder="6 caractères minimum" autocomplete="new-password">
+            <input type="password" id="confirm-password" class="input" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+            <div>
+              <button class="btn btn-secondary btn-sm" id="btn-save-password">Changer le mot de passe</button>
+            </div>
+          </div>
+          <span id="msg-password" style="font-size:.8125rem; display:none; margin-top:.5rem;"></span>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════
+           Section 2 — Progression
+      ══════════════════════════════════════════════ -->
+      <section class="card" style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.125rem; margin-bottom:1.5rem;">Progression</h2>
+
+        <!-- Progression globale -->
+        <div style="margin-bottom:1.5rem;">
+          <div class="progress-label">
+            <span id="prog-label">Chargement…</span>
+            <span id="prog-pct"></span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" id="prog-bar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Dernier cours consulté -->
+        <div id="last-cours-wrap" style="display:none; margin-bottom:1.5rem; padding:.875rem 1rem; background:var(--bg); border-radius:var(--radius-sm);">
+          <div style="font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:.25rem;">Dernier cours consulté</div>
+          <a id="last-cours-link" href="#" style="font-size:.9375rem; font-weight:500;"></a>
+        </div>
+
+        <!-- Par thème -->
+        <div id="themes-container">
+          <div style="color:var(--text-muted); font-size:.9rem;">Aucun cours disponible.</div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════
+           Section 3 — Historique
+      ══════════════════════════════════════════════ -->
+      <section class="card" style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.125rem; margin-bottom:1.25rem;">Historique</h2>
+        <div id="historique-container">
+          <div style="color:var(--text-muted); font-size:.9rem;">Chargement…</div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════
+           Section 4 — Sécurité
+      ══════════════════════════════════════════════ -->
+      <section class="card">
+        <h2 style="font-size:1.125rem; margin-bottom:1.5rem;">Sécurité</h2>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <!-- Déconnecter partout -->
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <div>
+              <div style="font-size:.9375rem; font-weight:500;">Déconnecter tous les appareils</div>
+              <div style="font-size:.8125rem; color:var(--text-muted);">Invalide toutes les sessions actives.</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-signout-global">Déconnecter partout</button>
+          </div>
+
+          <hr class="sep" style="margin:.5rem 0;">
+
+          <!-- Supprimer le compte -->
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <div>
+              <div style="font-size:.9375rem; font-weight:500; color:#dc2626;">Supprimer mon compte</div>
+              <div style="font-size:.8125rem; color:var(--text-muted);">Action irréversible. Toutes tes données seront supprimées.</div>
+            </div>
+            <button class="btn btn-danger btn-sm" id="btn-delete-account">Supprimer</button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /container -->
+  </main>
+
+  <!-- ══════════════════════════════════════════════
+       Modal suppression de compte
+  ══════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-delete">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Supprimer le compte</h3>
+        <button class="btn btn-ghost btn-icon" id="modal-close" aria-label="Fermer">✕</button>
+      </div>
+      <p style="color:var(--text-muted); font-size:.9375rem; margin-bottom:1.25rem;">
+        Cette action est <strong>irréversible</strong>. Pour confirmer, saisis ton adresse email ci-dessous.
+      </p>
+      <div class="form-group" style="margin-bottom:1.25rem;">
+        <label for="confirm-delete-email">Ton adresse email</label>
+        <input type="email" id="confirm-delete-email" class="input" placeholder="ton@email.com">
+      </div>
+      <div id="modal-error" class="alert alert-error" style="display:none; margin-bottom:1rem;">
+        <span id="modal-error-msg"></span>
+      </div>
+      <div style="display:flex; gap:.75rem; justify-content:flex-end;">
+        <button class="btn btn-secondary btn-sm" id="modal-cancel">Annuler</button>
+        <button class="btn btn-danger btn-sm" id="btn-confirm-delete">Supprimer définitivement</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+
+  <script>
+    /* ──────────────────────────────────────────────
+       Utilitaires
+    ────────────────────────────────────────────── */
+    const EVENT_LABELS = {
+      cours_vue:          'Cours consulté',
+      cours_dl:           'Cours téléchargé',
+      td_vue:             'TD consulté',
+      corrige_vue:        'Correction révélée',
+      fiche_vue:          'Fiche consultée',
+      fiche_dl:           'Fiche téléchargée',
+      annale_vue:         'Annale consultée',
+      annale_sujet_dl:    'Sujet téléchargé',
+      annale_corrige_dl:  'Corrigé téléchargé'
+    }
+
+    function flashMsg (id, msg, isError = false) {
+      const el = document.getElementById(id)
+      el.textContent = msg
+      el.style.color = isError ? '#dc2626' : '#16a34a'
+      el.style.display = 'block'
+      setTimeout(() => { el.style.display = 'none' }, 4000)
+    }
+
+    function formatDate (iso) {
+      return new Date(iso).toLocaleDateString('fr-FR', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+      })
+    }
+
+    /* ──────────────────────────────────────────────
+       Callback auth — appelé par auth.js
+    ────────────────────────────────────────────── */
+    window.onAuthReady = async function (session, profil) {
+      /* En-tête de page */
+      document.getElementById('page-title').textContent =
+        profil.prenom ? `Bonjour, ${profil.prenom} 👋` : 'Mon profil'
+      document.getElementById('page-subtitle').textContent = session.user.email
+
+      /* Pré-remplissage infos */
+      document.getElementById('prenom').value = profil.prenom || ''
+      document.getElementById('email').value  = session.user.email || ''
+      document.getElementById('classe').value = profil.classe || 'seconde'
+
+      /* Chargement parallèle des données */
+      await Promise.all([
+        loadProgression(session, profil),
+        loadHistorique(session)
+      ])
+    }
+
+    /* ──────────────────────────────────────────────
+       Progression
+    ────────────────────────────────────────────── */
+    async function loadProgression (session, profil) {
+      const classe = profil.classe || 'seconde'
+
+      const [{ data: allCours }, { data: prog }, { data: lastEvent }] = await Promise.all([
+        sb.from('cours').select('id, titre, theme, slug').eq('classe', classe).eq('est_publie', true).order('ordre'),
+        sb.from('progression').select('cours_id, cours_lu').eq('user_id', session.user.id).eq('cours_lu', true),
+        sb.from('events').select('cours(titre, slug, classe)').eq('user_id', session.user.id)
+          .eq('type', 'cours_vue').order('created_at', { ascending: false }).limit(1)
+      ])
+
+      if (!allCours?.length) {
+        document.getElementById('prog-label').textContent = 'Aucun cours disponible.'
+        return
+      }
+
+      const coursLus = new Set((prog || []).map(p => p.cours_id))
+      const total    = allCours.length
+      const lu       = coursLus.size
+      const pct      = Math.round((lu / total) * 100)
+
+      document.getElementById('prog-label').textContent = `${lu} / ${total} cours lus`
+      document.getElementById('prog-pct').textContent   = `${pct} %`
+      document.getElementById('prog-bar').style.width   = `${pct}%`
+
+      /* Dernier cours consulté */
+      const last = lastEvent?.[0]?.cours
+      if (last) {
+        document.getElementById('last-cours-link').textContent = last.titre
+        document.getElementById('last-cours-link').href        = `/cours/${last.classe}/${last.slug}`
+        document.getElementById('last-cours-wrap').style.display = ''
+      }
+
+      /* Par thème */
+      const themes = {}
+      allCours.forEach(c => {
+        if (!themes[c.theme]) themes[c.theme] = { total: 0, lu: 0 }
+        themes[c.theme].total++
+        if (coursLus.has(c.id)) themes[c.theme].lu++
+      })
+
+      const container = document.getElementById('themes-container')
+      container.innerHTML = Object.entries(themes).map(([theme, d]) => {
+        const p = Math.round((d.lu / d.total) * 100)
+        return `
+          <div style="margin-bottom:1rem;">
+            <div class="progress-label">
+              <span style="font-size:.875rem;">${theme}</span>
+              <span style="font-size:.8125rem;">${d.lu} / ${d.total}</span>
+            </div>
+            <div class="progress"><div class="progress-bar" style="width:${p}%"></div></div>
+          </div>`
+      }).join('')
+    }
+
+    /* ──────────────────────────────────────────────
+       Historique
+    ────────────────────────────────────────────── */
+    async function loadHistorique (session) {
+      const { data: events } = await sb
+        .from('events')
+        .select('type, created_at, cours(titre, slug, classe)')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      const container = document.getElementById('historique-container')
+
+      if (!events?.length) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:.9rem;">Aucune activité pour l\'instant.</p>'
+        return
+      }
+
+      container.innerHTML = events.map((e, i) => {
+        const label  = EVENT_LABELS[e.type] || e.type
+        const cours  = e.cours
+        const isLast = i === events.length - 1
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;
+                      padding:.625rem 0; ${isLast ? '' : 'border-bottom:1px solid var(--border);'}">
+            <div>
+              <div style="font-size:.9375rem;">
+                ${cours
+                  ? `<a href="/cours/${cours.classe}/${cours.slug}" style="color:var(--text);">${cours.titre}</a>`
+                  : '<span style="color:var(--text-muted);">—</span>'}
+              </div>
+              <div style="font-size:.8125rem; color:var(--text-muted); margin-top:.125rem;">${label}</div>
+            </div>
+            <div style="font-size:.8125rem; color:var(--text-muted); white-space:nowrap; flex-shrink:0;">
+              ${formatDate(e.created_at)}
+            </div>
+          </div>`
+      }).join('')
+    }
+
+    /* ──────────────────────────────────────────────
+       Sauvegarde infos
+    ────────────────────────────────────────────── */
+    document.getElementById('btn-save-prenom').addEventListener('click', async function () {
+      const prenom = document.getElementById('prenom').value.trim()
+      if (!prenom) return flashMsg('msg-prenom', 'Le prénom ne peut pas être vide.', true)
+      this.disabled = true
+      const { error } = await sb.from('profils').update({ prenom }).eq('id', window.authSession.user.id)
+      this.disabled = false
+      if (error) flashMsg('msg-prenom', error.message, true)
+      else        flashMsg('msg-prenom', 'Prénom enregistré !')
+    })
+
+    document.getElementById('btn-save-classe').addEventListener('click', async function () {
+      const classe = document.getElementById('classe').value
+      this.disabled = true
+      const { error } = await sb.from('profils').update({ classe }).eq('id', window.authSession.user.id)
+      this.disabled = false
+      if (error) flashMsg('msg-classe', error.message, true)
+      else        flashMsg('msg-classe', 'Classe enregistrée !')
+    })
+
+    document.getElementById('btn-save-email').addEventListener('click', async function () {
+      const email = document.getElementById('email').value.trim()
+      if (!email) return flashMsg('msg-email', 'Saisis une adresse email.', true)
+      if (email === window.authSession.user.email) return flashMsg('msg-email', 'C\'est déjà ton email actuel.')
+      this.disabled = true
+      const { error } = await sb.auth.updateUser({ email })
+      this.disabled = false
+      if (error) flashMsg('msg-email', error.message, true)
+      else        flashMsg('msg-email', 'Un lien de confirmation a été envoyé aux deux adresses.')
+    })
+
+    document.getElementById('btn-save-password').addEventListener('click', async function () {
+      const pwd     = document.getElementById('new-password').value
+      const pwdConf = document.getElementById('confirm-password').value
+      if (pwd.length < 6)   return flashMsg('msg-password', 'Minimum 6 caractères.', true)
+      if (pwd !== pwdConf)  return flashMsg('msg-password', 'Les mots de passe ne correspondent pas.', true)
+      this.disabled = true
+      const { error } = await sb.auth.updateUser({ password: pwd })
+      this.disabled = false
+      if (error) {
+        flashMsg('msg-password', error.message, true)
+      } else {
+        document.getElementById('new-password').value     = ''
+        document.getElementById('confirm-password').value = ''
+        flashMsg('msg-password', 'Mot de passe mis à jour !')
+      }
+    })
+
+    /* ──────────────────────────────────────────────
+       Sécurité — déconnexion globale
+    ────────────────────────────────────────────── */
+    document.getElementById('btn-signout-global').addEventListener('click', async function () {
+      this.disabled = true
+      this.textContent = 'Déconnexion…'
+      await sb.auth.signOut({ scope: 'global' })
+      window.location.replace('/connexion')
+    })
+
+    /* ──────────────────────────────────────────────
+       Sécurité — suppression de compte
+    ────────────────────────────────────────────── */
+    const modal = document.getElementById('modal-delete')
+
+    document.getElementById('btn-delete-account').addEventListener('click', () => {
+      document.getElementById('confirm-delete-email').value = ''
+      document.getElementById('modal-error').style.display = 'none'
+      modal.classList.add('open')
+    })
+
+    function closeModal () { modal.classList.remove('open') }
+    document.getElementById('modal-close').addEventListener('click', closeModal)
+    document.getElementById('modal-cancel').addEventListener('click', closeModal)
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal() })
+
+    document.getElementById('btn-confirm-delete').addEventListener('click', async function () {
+      const inputEmail = document.getElementById('confirm-delete-email').value.trim()
+      const modalError = document.getElementById('modal-error')
+      const modalMsg   = document.getElementById('modal-error-msg')
+
+      if (inputEmail !== window.authSession.user.email) {
+        modalMsg.textContent = 'L\'email ne correspond pas.'
+        modalError.style.display = 'flex'
+        return
+      }
+
+      this.disabled = true
+      this.textContent = 'Suppression…'
+
+      /* Supprime la ligne profil (RLS : l'utilisateur ne peut supprimer que la sienne) */
+      await sb.from('profils').delete().eq('id', window.authSession.user.id)
+
+      /* Déconnecte partout */
+      await sb.auth.signOut({ scope: 'global' })
+
+      /* Note : la suppression de auth.users nécessite la service role key
+         → à implémenter via une Edge Function Supabase en Phase 5 */
+      window.location.replace('/')
+    })
+  </script>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    /* onAuthReady est déjà défini ci-dessus ;
+       auth.js l'appellera après avoir vérifié la session */
+  </script>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html>

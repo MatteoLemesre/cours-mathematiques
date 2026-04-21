@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matteo Lemesre — Cours de mathématiques</title>
+  <meta name="description" content="Cours de mathématiques lycée et prépa — Seconde, Première, Terminale, MPSI, MP.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    .hero {
+      padding: 5rem 0 4rem;
+      text-align: center;
+    }
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .hero-sub {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto 2rem;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-size: 1.375rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .classes-section { padding: 3rem 0 4rem; }
+    .classes-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+    .class-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .625rem;
+    }
+    .class-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: var(--text);
+    }
+    .class-card-name { font-size: 1.125rem; font-weight: 700; }
+    .class-card-count { font-size: .8125rem; color: var(--text-muted); }
+
+    .features-section {
+      padding: 3rem 0 5rem;
+      border-top: 1px solid var(--border);
+    }
+    .features-section .section-title { text-align: center; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.5rem;
+    }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 1rem; }
+    .feature-title { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+    .feature-desc { font-size: .9rem; color: var(--text-muted); line-height: 1.6; }
+
+    @media (max-width: 900px) {
+      .classes-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .hero-title { font-size: 2rem; }
+      .classes-grid { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/" class="active">Accueil</a></li>
+        <li><a href="/annales">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <div id="nav-guest" style="display:flex;gap:.5rem;">
+          <a href="/connexion" class="btn btn-ghost btn-sm">Connexion</a>
+          <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+        </div>
+        <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
+          <a href="/profil" class="btn btn-ghost btn-sm" id="nav-prenom">Mon profil</a>
+          <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero-title">Les maths,<br>sans les galères.</h1>
+        <p class="hero-sub">Cours structurés, exercices corrigés et annales pour le lycée et la prépa — à ton rythme.</p>
+        <div class="hero-actions">
+          <a href="/inscription" class="btn btn-primary btn-lg" id="cta-primary">Commencer gratuitement</a>
+          <a href="#classes" class="btn btn-secondary btn-lg">Voir les cours</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Classes -->
+    <section class="classes-section" id="classes">
+      <div class="container">
+        <h2 class="section-title">Choisis ta classe</h2>
+        <div class="classes-grid" id="classes-grid">
+          <!-- Cards injectées par JS -->
+          <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">
+            <div class="spinner" style="margin:0 auto;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+      <div class="container">
+        <h2 class="section-title">Tout ce qu'il te faut</h2>
+        <div class="features-grid">
+          <div class="feature-card reveal">
+            <div class="feature-icon">📖</div>
+            <h3 class="feature-title">Cours &amp; TD</h3>
+            <p class="feature-desc">Définitions, théorèmes et exercices corrigés organisés par chapitre. Lis le cours, fais les TD, conserve les fiches résumé.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-icon">📊</div>
+            <h3 class="feature-title">Suivi de progression</h3>
+            <p class="feature-desc">Marque les chapitres lus et les TD faits. Visualise ta progression par thème et par classe en un coup d'œil.</p>
+          </div>
+          <div class="feature-card reveal">
+            <div class="feature-icon">📝</div>
+            <h3 class="feature-title">Annales corrigées</h3>
+            <p class="feature-desc">Sujets de bac et concours avec leurs corrigés détaillés. Filtre par type, classe, année et thème.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    const CLASSES = [
+      { slug: 'seconde',   label: 'Seconde',   badge: 'Lycée',  badgeClass: 'badge-blue'   },
+      { slug: 'premiere',  label: 'Première',  badge: 'Lycée',  badgeClass: 'badge-blue'   },
+      { slug: 'terminale', label: 'Terminale', badge: 'Lycée',  badgeClass: 'badge-blue'   },
+      { slug: 'mpsi',      label: 'MPSI',      badge: 'Prépa',  badgeClass: 'badge-purple' },
+      { slug: 'mp',        label: 'MP',        badge: 'Prépa',  badgeClass: 'badge-purple' },
+    ]
+
+    async function init () {
+      const { data: { session } } = await sb.auth.getSession()
+
+      if (session) {
+        document.getElementById('nav-guest').style.display = 'none'
+        document.getElementById('nav-user').style.display = 'flex'
+
+        const { data: profil } = await sb
+          .from('profils').select('prenom,classe').eq('id', session.user.id).single()
+
+        if (profil?.prenom) document.getElementById('nav-prenom').textContent = profil.prenom
+        if (profil?.classe) {
+          const ctaPrimary = document.getElementById('cta-primary')
+          ctaPrimary.href = `/cours/${profil.classe}`
+          ctaPrimary.textContent = 'Accéder à mes cours'
+        }
+      }
+
+      document.getElementById('btn-deconnexion')?.addEventListener('click', async () => {
+        await sb.auth.signOut()
+        window.location.reload()
+      })
+
+      await loadClasses()
+    }
+
+    async function loadClasses () {
+      const { data: rows } = await sb
+        .from('cours')
+        .select('classe')
+        .eq('est_publie', true)
+
+      const countMap = {}
+      if (rows) {
+        for (const r of rows) {
+          countMap[r.classe] = (countMap[r.classe] || 0) + 1
+        }
+      }
+
+      const grid = document.getElementById('classes-grid')
+      grid.innerHTML = CLASSES.map(c => {
+        const n = countMap[c.slug] || 0
+        return `<a href="/cours/${c.slug}" class="class-card reveal">
+          <span class="badge ${c.badgeClass}">${c.badge}</span>
+          <span class="class-card-name">${c.label}</span>
+          <span class="class-card-count">${n} chapitre${n !== 1 ? 's' : ''}</span>
+        </a>`
+      }).join('')
+
+      observeReveal()
+    }
+
+    function observeReveal () {
+      const els = document.querySelectorAll('.reveal:not(.visible)')
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target) }
+        })
+      }, { threshold: .1 })
+      els.forEach(el => io.observe(el))
+    }
+
+    init()
+  </script>
+</body>
+</html>

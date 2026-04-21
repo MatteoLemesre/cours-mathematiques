@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapitre — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    body { padding-top: var(--nav-h); }
+
+    .chapitre-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - var(--nav-h));
+      align-items: start;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: var(--nav-h);
+      height: calc(100vh - var(--nav-h));
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 1.25rem .875rem;
+      scrollbar-width: thin;
+    }
+    .sidebar-back {
+      display: flex;
+      align-items: center;
+      gap: .375rem;
+      font-size: .8125rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    .sidebar-back:hover { color: var(--accent); text-decoration: none; }
+
+    .sidebar-progress { margin-bottom: 1.25rem; }
+    .sidebar-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-bottom: .3rem;
+    }
+
+    .sidebar-title {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-muted);
+      margin-bottom: .5rem;
+      padding: 0 .375rem;
+    }
+    .sidebar-list { display: flex; flex-direction: column; gap: .125rem; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .45rem .5rem;
+      border-radius: var(--radius-sm);
+      font-size: .8125rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all var(--transition);
+      line-height: 1.4;
+    }
+    .sidebar-item:hover { background: var(--bg); color: var(--text); text-decoration: none; }
+    .sidebar-item.active { background: rgba(0,102,255,.08); color: var(--accent); font-weight: 600; }
+    .sidebar-dots {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .sidebar-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background var(--transition);
+    }
+    .sidebar-dot.cours  { background: var(--accent); }
+    .sidebar-dot.td     { background: #16a34a; }
+
+    /* Main content */
+    .chapitre-main {
+      padding: 2rem 2.5rem 4rem;
+      max-width: 820px;
+    }
+    .chapitre-top-progress { margin-bottom: 1.5rem; }
+    .chapitre-meta {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: .75rem;
+      flex-wrap: wrap;
+    }
+    .chapitre-title { margin-bottom: 1.5rem; }
+
+    /* Tabs */
+    .tabs { margin-bottom: 2rem; }
+
+    /* PDF iframe */
+    .pdf-frame {
+      width: 100%;
+      height: 600px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Blocs */
+    .blocs-list { margin-bottom: 2rem; }
+
+    /* Action bar */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+    .action-bar .btn-done {
+      background: rgba(34,197,94,.1);
+      color: #16a34a;
+      border: 1px solid rgba(34,197,94,.3);
+    }
+    [data-theme="dark"] .action-bar .btn-done { color: #4ade80; }
+
+    /* Fiche */
+    .fiche-empty {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--text-muted);
+    }
+
+    /* Login prompt */
+    .login-prompt {
+      background: rgba(0,102,255,.06);
+      border: 1px solid rgba(0,102,255,.2);
+      border-radius: var(--radius-sm);
+      padding: .875rem 1.125rem;
+      font-size: .9375rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      .chapitre-layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .chapitre-main { padding: 1.5rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/" >Accueil</a></li>
+        <li><a href="/annales">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <div id="nav-guest" style="display:flex;gap:.5rem;">
+          <a href="/connexion" class="btn btn-ghost btn-sm">Connexion</a>
+          <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+        </div>
+        <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
+          <a href="/profil" class="btn btn-ghost btn-sm" id="nav-prenom">Mon profil</a>
+          <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="chapitre-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="#" id="sidebar-back" class="sidebar-back">← Retour aux chapitres</a>
+      <div class="sidebar-progress">
+        <div class="sidebar-progress-label">
+          <span>Chapitres lus</span>
+          <span id="sidebar-pct">0%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="sidebar-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="sidebar-title">Chapitres</div>
+      <div class="sidebar-list" id="sidebar-list">
+        <div style="padding:.5rem;color:var(--text-muted);font-size:.8125rem;">Chargement…</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="chapitre-main" id="chapitre-main">
+      <div style="text-align:center;padding:4rem 0;">
+        <div class="spinner" style="margin:0 auto;"></div>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    const CLASS_LABELS = {
+      seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+    }
+    const THEME_COLORS = {
+      'Analyse': 'badge-blue', 'Algèbre': 'badge-purple', 'Géométrie': 'badge-green',
+      'Probabilités': 'badge-orange', 'Statistiques': 'badge-orange', 'Arithmétique': 'badge-red',
+    }
+    function themeColor (t) { return THEME_COLORS[t] || 'badge-muted' }
+
+    const urlParts = window.location.pathname.split('/')
+    const classe   = urlParts[2] || 'seconde'
+    const slug     = urlParts[3] || ''
+
+    document.getElementById('sidebar-back').href = `/cours/${classe}`
+
+    let session = null
+    let currentCours = null
+    let progression  = {}
+
+    // Wait for KaTeX to be ready
+    function waitKaTeX (cb) {
+      if (typeof renderMathInElement !== 'undefined') { cb() }
+      else { setTimeout(() => waitKaTeX(cb), 60) }
+    }
+
+    function renderMath (el) {
+      waitKaTeX(() => {
+        renderMathInElement(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$',  right: '$',  display: false },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false },
+          ],
+          throwOnError: false,
+        })
+      })
+    }
+
+    async function init () {
+      const { data: { session: s } } = await sb.auth.getSession()
+      session = s
+
+      if (session) {
+        document.getElementById('nav-guest').style.display = 'none'
+        document.getElementById('nav-user').style.display = 'flex'
+        const { data: profil } = await sb.from('profils').select('prenom').eq('id', session.user.id).single()
+        if (profil?.prenom) document.getElementById('nav-prenom').textContent = profil.prenom
+        document.getElementById('btn-deconnexion')?.addEventListener('click', async () => {
+          await sb.auth.signOut(); window.location.reload()
+        })
+      }
+
+      // Load the course
+      const { data: cours, error } = await sb
+        .from('cours').select('*').eq('slug', slug).single()
+
+      if (error || !cours) {
+        document.getElementById('chapitre-main').innerHTML = `
+          <div style="text-align:center;padding:4rem 0;color:var(--text-muted);">
+            <div style="font-size:2rem;">🔍</div>
+            <h3>Chapitre introuvable</h3>
+            <p><a href="/cours/${classe}">Retour à la liste</a></p>
+          </div>`
+        return
+      }
+
+      // Access control: if not demo and not logged in → redirect to inscription
+      if (!cours.est_demo && !session) {
+        window.location.replace('/inscription')
+        return
+      }
+
+      currentCours = cours
+      document.title = `${cours.titre} — Matteo Lemesre`
+
+      // Load sidebar (all chapters of the class)
+      const [{ data: chapitres }, progRes] = await Promise.all([
+        sb.from('cours').select('id,titre,slug,ordre').eq('classe', classe).eq('est_publie', true).order('ordre'),
+        session
+          ? sb.from('progression').select('cours_id,cours_lu,td_fait').eq('user_id', session.user.id)
+          : { data: [] },
+      ])
+
+      if (progRes.data) {
+        for (const p of progRes.data) progression[p.cours_id] = p
+      }
+
+      renderSidebar(chapitres || [])
+      await renderMain(cours)
+    }
+
+    function renderSidebar (chapitres) {
+      const total = chapitres.length
+      const lu    = chapitres.filter(c => progression[c.id]?.cours_lu).length
+      const pct   = total ? Math.round(lu / total * 100) : 0
+      document.getElementById('sidebar-pct').textContent = `${pct}%`
+      document.getElementById('sidebar-bar').style.width = `${pct}%`
+
+      document.getElementById('sidebar-list').innerHTML = chapitres.map(c => {
+        const p = progression[c.id] || {}
+        const active = c.slug === slug ? ' active' : ''
+        return `<a href="/cours/${classe}/${c.slug}" class="sidebar-item${active}">
+          <div class="sidebar-dots">
+            <div class="sidebar-dot${p.cours_lu ? ' cours' : ''}"></div>
+            <div class="sidebar-dot${p.td_fait  ? ' td'   : ''}"></div>
+          </div>
+          <span>${c.titre}</span>
+        </a>`
+      }).join('')
+    }
+
+    async function renderMain (cours) {
+      const [{ data: blocs }, { data: exercices }] = await Promise.all([
+        sb.from('blocs').select('*').eq('cours_id', cours.id).order('ordre'),
+        sb.from('exercices').select('*').eq('cours_id', cours.id).order('ordre'),
+      ])
+
+      const prog = progression[cours.id] || {}
+      const isDemo = cours.est_demo && !session
+
+      const main = document.getElementById('chapitre-main')
+      main.innerHTML = `
+        <div class="chapitre-top-progress">
+          <div class="progress-label">
+            <span>Classe : ${CLASS_LABELS[classe] || classe}</span>
+          </div>
+        </div>
+
+        <div class="chapitre-meta">
+          <span class="badge ${themeColor(cours.theme)}">${cours.theme}</span>
+          ${cours.est_demo ? '<span class="badge badge-green">Accès libre</span>' : ''}
+        </div>
+        <h1 class="chapitre-title">${cours.titre}</h1>
+
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="cours" role="tab">Cours</button>
+          <button class="tab-btn" data-tab="td" role="tab">TD</button>
+          <button class="tab-btn" data-tab="fiche" role="tab">Fiche</button>
+        </div>
+
+        <!-- Onglet COURS -->
+        <div class="tab-panel active" id="panel-cours">
+          ${cours.cours_pdf_url ? `
+            <iframe class="pdf-frame" src="${cours.cours_pdf_url}" title="PDF du cours"></iframe>
+            <div style="margin-bottom:1.5rem;">
+              <a href="${cours.cours_pdf_url}" download class="btn btn-secondary btn-sm" id="btn-dl-cours">
+                ⬇ Télécharger le cours PDF
+              </a>
+            </div>` : ''}
+          <div class="blocs-list" id="blocs-list">
+            ${renderBlocs(blocs || [])}
+          </div>
+          <div class="action-bar">
+            ${isDemo ? `
+              <div class="login-prompt" style="width:100%;">
+                <span>Connecte-toi pour marquer ce chapitre comme lu et suivre ta progression.</span>
+                <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+              </div>` : `
+              <button class="btn ${prog.cours_lu ? 'btn-done' : 'btn-primary'}" id="btn-cours-lu" ${prog.cours_lu ? 'disabled' : ''}>
+                ${prog.cours_lu ? '✓ Cours marqué comme lu' : 'Marquer comme lu'}
+              </button>`}
+          </div>
+        </div>
+
+        <!-- Onglet TD -->
+        <div class="tab-panel" id="panel-td">
+          ${exercices && exercices.length > 0
+            ? `<div id="exercices-list">${renderExercices(exercices, isDemo)}</div>
+               <div class="action-bar">
+                 ${isDemo ? `
+                   <div class="login-prompt" style="width:100%;">
+                     <span>Connecte-toi pour marquer le TD comme fait.</span>
+                     <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+                   </div>` : `
+                   <button class="btn ${prog.td_fait ? 'btn-done' : 'btn-primary'}" id="btn-td-fait" ${prog.td_fait ? 'disabled' : ''}>
+                     ${prog.td_fait ? '✓ TD marqué comme fait' : 'Marquer le TD comme fait'}
+                   </button>`}
+               </div>`
+            : '<div class="fiche-empty"><p>Aucun exercice pour ce chapitre.</p></div>'}
+        </div>
+
+        <!-- Onglet FICHE -->
+        <div class="tab-panel" id="panel-fiche">
+          ${cours.fiche_pdf_url ? `
+            <iframe class="pdf-frame" src="${cours.fiche_pdf_url}" title="Fiche résumé"></iframe>
+            <a href="${cours.fiche_pdf_url}" download class="btn btn-secondary btn-sm" id="btn-dl-fiche">
+              ⬇ Télécharger la fiche PDF
+            </a>` : `
+            <div class="fiche-empty">
+              <div style="font-size:2rem;">📋</div>
+              <h3>Fiche bientôt disponible</h3>
+              <p>La fiche résumé de ce chapitre sera en ligne prochainement.</p>
+            </div>`}
+        </div>`
+
+      // Render KaTeX in blocs
+      const blocsEl = document.getElementById('blocs-list')
+      if (blocsEl) renderMath(blocsEl)
+
+      // Render KaTeX in exercices
+      const exosEl = document.getElementById('exercices-list')
+      if (exosEl) renderMath(exosEl)
+
+      bindTabs()
+      bindActions(cours, prog, blocs, exercices)
+    }
+
+    function renderBlocs (blocs) {
+      if (!blocs.length) return '<p style="color:var(--text-muted);">Aucun bloc de cours.</p>'
+      return blocs.map(b => `
+        <div class="bloc bloc-${b.type}">
+          <div class="bloc-header">
+            <span class="bloc-type">${b.type}</span>
+            ${b.titre ? `<span class="bloc-title">${b.titre}</span>` : ''}
+          </div>
+          <div class="bloc-body">${b.enonce}</div>
+          ${b.conseil ? `<div class="bloc-conseil">💡 ${b.conseil}</div>` : ''}
+        </div>`).join('')
+    }
+
+    function renderExercices (exercices, isDemo) {
+      return exercices.map((ex, i) => `
+        <div class="exercice">
+          <div class="exercice-header">
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <span style="font-size:.875rem;font-weight:600;color:var(--text-muted);">Exercice ${i + 1}</span>
+              <div class="difficulty" data-level="${ex.difficulte}" title="Difficulté ${ex.difficulte}/3">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm btn-correction" data-id="${ex.id}">Voir la correction</button>
+          </div>
+          <div class="exercice-body">
+            <div class="exo-enonce">${ex.enonce}</div>
+            <div class="correction" id="corr-${ex.id}">
+              <strong style="font-size:.8125rem;color:#16a34a;display:block;margin-bottom:.5rem;">Correction</strong>
+              ${ex.correction}
+            </div>
+          </div>
+        </div>`).join('')
+    }
+
+    function bindTabs () {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+          document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'))
+          btn.classList.add('active')
+          document.getElementById(`panel-${btn.dataset.tab}`).classList.add('active')
+        })
+      })
+    }
+
+    function bindActions (cours, prog, blocs, exercices) {
+      // Correction toggles
+      document.querySelectorAll('.btn-correction').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id   = btn.dataset.id
+          const corr = document.getElementById(`corr-${id}`)
+          const showing = corr.classList.toggle('visible')
+          btn.textContent = showing ? 'Masquer la correction' : 'Voir la correction'
+          if (showing && session) {
+            await logEvent('corrige_vue', cours.id)
+            renderMath(corr)
+          }
+        })
+      })
+
+      // Cours lu
+      const btnCoursLu = document.getElementById('btn-cours-lu')
+      if (btnCoursLu) {
+        btnCoursLu.addEventListener('click', async () => {
+          btnCoursLu.disabled = true
+          btnCoursLu.textContent = '…'
+          await upsertProgression(cours.id, { cours_lu: true, cours_lu_at: new Date().toISOString() })
+          await logEvent('cours_vue', cours.id)
+          btnCoursLu.textContent = '✓ Cours marqué comme lu'
+          btnCoursLu.className = 'btn btn-done'
+          refreshSidebarDot(cours.id, 'cours')
+        })
+      }
+
+      // TD fait
+      const btnTdFait = document.getElementById('btn-td-fait')
+      if (btnTdFait) {
+        btnTdFait.addEventListener('click', async () => {
+          btnTdFait.disabled = true
+          btnTdFait.textContent = '…'
+          await upsertProgression(cours.id, { td_fait: true, td_fait_at: new Date().toISOString() })
+          await logEvent('td_vue', cours.id)
+          btnTdFait.textContent = '✓ TD marqué comme fait'
+          btnTdFait.className = 'btn btn-done'
+          refreshSidebarDot(cours.id, 'td')
+        })
+      }
+
+      // Téléchargement cours PDF
+      document.getElementById('btn-dl-cours')?.addEventListener('click', async () => {
+        if (session) await logEvent('cours_dl', cours.id)
+      })
+
+      // Téléchargement fiche PDF
+      document.getElementById('btn-dl-fiche')?.addEventListener('click', async () => {
+        if (session) await logEvent('fiche_dl', cours.id)
+      })
+    }
+
+    async function upsertProgression (coursId, fields) {
+      if (!session) return
+      await sb.from('progression').upsert({
+        user_id: session.user.id,
+        cours_id: coursId,
+        ...fields,
+      }, { onConflict: 'user_id,cours_id' })
+    }
+
+    async function logEvent (type, coursId) {
+      if (!session) return
+      await sb.from('events').insert({ user_id: session.user.id, cours_id: coursId, type })
+    }
+
+    function refreshSidebarDot (coursId, type) {
+      const active = document.querySelector('.sidebar-item.active')
+      if (!active) return
+      const dots = active.querySelectorAll('.sidebar-dot')
+      if (type === 'cours' && dots[0]) dots[0].classList.add('cours')
+      if (type === 'td'    && dots[1]) dots[1].classList.add('td')
+    }
+
+    init()
+  </script>
+</body>
+</html>

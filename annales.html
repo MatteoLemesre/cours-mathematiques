@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annales — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    .filters-bar {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .filters-bar select {
+      padding: .45rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: .875rem;
+      cursor: pointer;
+      transition: border-color var(--transition);
+      outline: none;
+    }
+    .filters-bar select:focus { border-color: var(--accent); }
+
+    .annales-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+    .annale-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .875rem;
+      transition: box-shadow var(--transition), border-color var(--transition);
+    }
+    .annale-card:hover { box-shadow: var(--shadow); }
+
+    .annale-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
+    .annale-card-title  { font-size: 1rem; font-weight: 600; line-height: 1.4; }
+    .annale-card-year   { font-size: .875rem; color: var(--text-muted); white-space: nowrap; }
+    .annale-card-meta   { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .annale-card-themes { display: flex; gap: .375rem; flex-wrap: wrap; }
+    .annale-card-actions {
+      display: flex;
+      gap: .625rem;
+      margin-top: .25rem;
+      flex-wrap: wrap;
+    }
+
+    .no-results {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-muted);
+    }
+
+    .results-count {
+      font-size: .875rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/annales" class="active">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <a href="/profil" class="btn btn-ghost btn-sm">Mon profil</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <div class="container">
+        <h1>Annales</h1>
+        <p>Sujets de bac et concours avec leurs corrigés, filtrés selon tes besoins.</p>
+      </div>
+    </div>
+
+    <div class="container" style="padding-bottom:4rem;">
+      <!-- Filtres -->
+      <div class="filters-bar">
+        <select id="filter-type" aria-label="Type">
+          <option value="">Tous les types</option>
+          <option value="bac">Bac</option>
+          <option value="concours">Concours</option>
+        </select>
+        <select id="filter-classe" aria-label="Classe">
+          <option value="">Toutes les classes</option>
+          <option value="seconde">Seconde</option>
+          <option value="premiere">Première</option>
+          <option value="terminale">Terminale</option>
+          <option value="mpsi">MPSI</option>
+          <option value="mp">MP</option>
+        </select>
+        <select id="filter-annee" aria-label="Année">
+          <option value="">Toutes les années</option>
+          <!-- Populated by JS -->
+        </select>
+        <select id="filter-theme" aria-label="Thème">
+          <option value="">Tous les thèmes</option>
+          <!-- Populated by JS -->
+        </select>
+        <button class="btn btn-ghost btn-sm" id="btn-reset">Réinitialiser</button>
+      </div>
+
+      <div class="results-count" id="results-count"></div>
+      <div class="annales-grid" id="annales-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem 0;">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    const CLASS_LABELS = {
+      seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+    }
+    const TYPE_LABELS  = { bac: 'Bac', concours: 'Concours' }
+    const TYPE_BADGES  = { bac: 'badge-blue', concours: 'badge-purple' }
+    const THEME_COLORS = {
+      'Analyse': 'badge-blue', 'Algèbre': 'badge-purple', 'Géométrie': 'badge-green',
+      'Probabilités': 'badge-orange', 'Statistiques': 'badge-orange', 'Arithmétique': 'badge-red',
+    }
+    function themeColor (t) { return THEME_COLORS[t] || 'badge-muted' }
+
+    let allSujets = []
+    const filters  = { type: '', classe: '', annee: '', theme: '' }
+
+    window.onAuthReady = async function (session, profil) {
+      await loadSujets()
+    }
+
+    async function loadSujets () {
+      const { data, error } = await sb.from('sujets').select('*').eq('est_publie', true).order('annee', { ascending: false })
+      if (error) { console.error(error); return }
+      allSujets = data || []
+      populateFilters()
+      applyFilters()
+    }
+
+    function populateFilters () {
+      const annees = [...new Set(allSujets.map(s => s.annee).filter(Boolean))].sort((a, b) => b - a)
+      const themes = [...new Set(allSujets.flatMap(s => s.themes || []).filter(Boolean))].sort()
+
+      const selAnnee = document.getElementById('filter-annee')
+      annees.forEach(a => {
+        const opt = document.createElement('option')
+        opt.value = a; opt.textContent = a
+        selAnnee.appendChild(opt)
+      })
+
+      const selTheme = document.getElementById('filter-theme')
+      themes.forEach(t => {
+        const opt = document.createElement('option')
+        opt.value = t; opt.textContent = t
+        selTheme.appendChild(opt)
+      })
+
+      ;['filter-type','filter-classe','filter-annee','filter-theme'].forEach(id => {
+        document.getElementById(id).addEventListener('change', function () {
+          filters[id.replace('filter-','')] = this.value
+          applyFilters()
+        })
+      })
+
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        ;['filter-type','filter-classe','filter-annee','filter-theme'].forEach(id => {
+          document.getElementById(id).value = ''
+          filters[id.replace('filter-','')] = ''
+        })
+        applyFilters()
+      })
+    }
+
+    function applyFilters () {
+      let result = allSujets
+      if (filters.type)   result = result.filter(s => s.type === filters.type)
+      if (filters.classe) result = result.filter(s => s.classe === filters.classe)
+      if (filters.annee)  result = result.filter(s => String(s.annee) === filters.annee)
+      if (filters.theme)  result = result.filter(s => s.themes && s.themes.includes(filters.theme))
+      renderSujets(result)
+    }
+
+    function renderSujets (sujets) {
+      const count = document.getElementById('results-count')
+      count.textContent = `${sujets.length} sujet${sujets.length !== 1 ? 's' : ''} trouvé${sujets.length !== 1 ? 's' : ''}`
+
+      const grid = document.getElementById('annales-grid')
+      if (!sujets.length) {
+        grid.innerHTML = `<div class="no-results">
+          <div style="font-size:2rem;">🔍</div>
+          <p style="margin-top:.5rem;">Aucun sujet ne correspond à ces critères.</p>
+        </div>`
+        return
+      }
+
+      grid.innerHTML = sujets.map(s => `
+        <div class="annale-card">
+          <div class="annale-card-header">
+            <div class="annale-card-title">${s.titre}</div>
+            <span class="annale-card-year">${s.annee || ''}</span>
+          </div>
+          <div class="annale-card-meta">
+            ${s.type   ? `<span class="badge ${TYPE_BADGES[s.type] || 'badge-muted'}">${TYPE_LABELS[s.type] || s.type}</span>` : ''}
+            ${s.concours ? `<span class="badge badge-muted">${s.concours}</span>` : ''}
+            ${s.classe   ? `<span class="badge badge-muted">${CLASS_LABELS[s.classe] || s.classe}</span>` : ''}
+          </div>
+          ${s.themes && s.themes.length ? `
+          <div class="annale-card-themes">
+            ${s.themes.map(t => `<span class="badge ${themeColor(t)}">${t}</span>`).join('')}
+          </div>` : ''}
+          <div class="annale-card-actions">
+            ${s.sujet_pdf_url   ? `<a href="/annales/${s.slug}" class="btn btn-primary btn-sm">Voir le sujet</a>` : ''}
+            ${s.corrige_pdf_url ? `<a href="/annales/${s.slug}#corrige" class="btn btn-secondary btn-sm">Voir le corrigé</a>` : ''}
+          </div>
+        </div>`).join('')
+    }
+  </script>
+</body>
+</html>

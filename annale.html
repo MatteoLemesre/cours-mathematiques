@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annale — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    .annale-header {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .annale-header-back {
+      font-size: .875rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: .375rem;
+      margin-bottom: 1rem;
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    .annale-header-back:hover { color: var(--accent); text-decoration: none; }
+    .annale-header h1 { margin-bottom: .875rem; }
+    .annale-meta {
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      flex-wrap: wrap;
+    }
+
+    .annale-body { padding: 2.5rem 0 5rem; }
+
+    .pdf-section { margin-bottom: 2.5rem; }
+    .pdf-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .pdf-frame {
+      width: 100%;
+      height: 640px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+    }
+
+    .corrige-locked {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .corrige-locked h3 { color: var(--text); margin-bottom: .5rem; }
+    .corrige-locked p  { margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/annales" class="active">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <a href="/profil" class="btn btn-ghost btn-sm">Mon profil</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <div style="text-align:center;padding:6rem 0;">
+      <div class="spinner" style="margin:0 auto;"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    const CLASS_LABELS = {
+      seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+    }
+    const TYPE_LABELS  = { bac: 'Bac', concours: 'Concours' }
+    const TYPE_BADGES  = { bac: 'badge-blue', concours: 'badge-purple' }
+    const THEME_COLORS = {
+      'Analyse': 'badge-blue', 'Algèbre': 'badge-purple', 'Géométrie': 'badge-green',
+      'Probabilités': 'badge-orange', 'Statistiques': 'badge-orange', 'Arithmétique': 'badge-red',
+    }
+    function themeColor (t) { return THEME_COLORS[t] || 'badge-muted' }
+
+    const urlParts = window.location.pathname.split('/')
+    const slug     = urlParts[2] || ''
+
+    let currentSujet = null
+
+    window.onAuthReady = async function (session, profil) {
+      const { data: sujet, error } = await sb
+        .from('sujets').select('*').eq('slug', slug).eq('est_publie', true).single()
+
+      if (error || !sujet) {
+        document.getElementById('main-content').innerHTML = `
+          <div style="text-align:center;padding:6rem 0;color:var(--text-muted);">
+            <div style="font-size:2rem;">🔍</div>
+            <h3>Sujet introuvable</h3>
+            <p><a href="/annales">Retour aux annales</a></p>
+          </div>`
+        return
+      }
+
+      currentSujet = sujet
+      document.title = `${sujet.titre} — Matteo Lemesre`
+
+      // Log vue event
+      await sb.from('events').insert({
+        user_id: session.user.id,
+        cours_id: null,
+        type: 'annale_vue',
+      }).then(() => {}) // fire and forget
+
+      // Determine if we should auto-open corrigé (from #corrige hash)
+      const showCorrige = window.location.hash === '#corrige'
+
+      renderPage(sujet, session, showCorrige)
+    }
+
+    function renderPage (sujet, session, showCorrige) {
+      const themes = (sujet.themes || []).map(t =>
+        `<span class="badge ${themeColor(t)}">${t}</span>`).join('')
+
+      document.getElementById('main-content').innerHTML = `
+        <div class="annale-header">
+          <div class="container">
+            <a href="/annales" class="annale-header-back">← Toutes les annales</a>
+            <h1>${sujet.titre}</h1>
+            <div class="annale-meta">
+              ${sujet.annee ? `<span class="badge badge-muted">${sujet.annee}</span>` : ''}
+              ${sujet.type  ? `<span class="badge ${TYPE_BADGES[sujet.type] || 'badge-muted'}">${TYPE_LABELS[sujet.type] || sujet.type}</span>` : ''}
+              ${sujet.concours ? `<span class="badge badge-muted">${sujet.concours}</span>` : ''}
+              ${sujet.classe   ? `<span class="badge badge-muted">${CLASS_LABELS[sujet.classe] || sujet.classe}</span>` : ''}
+              ${themes}
+            </div>
+          </div>
+        </div>
+
+        <div class="annale-body">
+          <div class="container">
+            <!-- Sujet PDF -->
+            ${sujet.sujet_pdf_url ? `
+            <div class="pdf-section">
+              <div class="pdf-section-title">
+                <span>📄 Sujet</span>
+                <a href="${sujet.sujet_pdf_url}" download class="btn btn-secondary btn-sm" id="btn-dl-sujet">
+                  ⬇ Télécharger
+                </a>
+              </div>
+              <iframe class="pdf-frame" src="${sujet.sujet_pdf_url}" title="Sujet"></iframe>
+            </div>` : ''}
+
+            <!-- Corrigé -->
+            <div class="pdf-section" id="section-corrige">
+              <div class="pdf-section-title">
+                <span>✏️ Corrigé</span>
+                ${sujet.corrige_pdf_url && showCorrige ? `
+                <a href="${sujet.corrige_pdf_url}" download class="btn btn-secondary btn-sm" id="btn-dl-corrige">
+                  ⬇ Télécharger
+                </a>` : ''}
+              </div>
+              ${sujet.corrige_pdf_url
+                ? (showCorrige
+                    ? `<iframe class="pdf-frame" src="${sujet.corrige_pdf_url}" title="Corrigé" id="iframe-corrige"></iframe>`
+                    : `<div class="corrige-locked" id="corrige-locked">
+                        <h3>Le corrigé est masqué</h3>
+                        <p>Essaie d'abord de résoudre le sujet par toi-même avant de consulter la correction.</p>
+                        <button class="btn btn-primary" id="btn-reveal-corrige">Révéler le corrigé</button>
+                       </div>`)
+                : `<div class="corrige-locked">
+                    <h3>Corrigé bientôt disponible</h3>
+                    <p>Le corrigé de ce sujet sera ajouté prochainement.</p>
+                   </div>`}
+            </div>
+          </div>
+        </div>`
+
+      // Bind download events
+      document.getElementById('btn-dl-sujet')?.addEventListener('click', async () => {
+        await sb.from('events').insert({
+          user_id: session.user.id, cours_id: null, type: 'annale_sujet_dl'
+        })
+      })
+
+      document.getElementById('btn-dl-corrige')?.addEventListener('click', async () => {
+        await sb.from('events').insert({
+          user_id: session.user.id, cours_id: null, type: 'annale_corrige_dl'
+        })
+      })
+
+      // Bind reveal button
+      document.getElementById('btn-reveal-corrige')?.addEventListener('click', async () => {
+        const section = document.getElementById('section-corrige')
+        section.querySelector('.pdf-section-title').innerHTML = `
+          <span>✏️ Corrigé</span>
+          <a href="${sujet.corrige_pdf_url}" download class="btn btn-secondary btn-sm" id="btn-dl-corrige">
+            ⬇ Télécharger
+          </a>`
+        document.getElementById('corrige-locked').outerHTML =
+          `<iframe class="pdf-frame" src="${sujet.corrige_pdf_url}" title="Corrigé" id="iframe-corrige"></iframe>`
+
+        await sb.from('events').insert({
+          user_id: session.user.id, cours_id: null, type: 'annale_corrige_dl'
+        })
+
+        document.getElementById('btn-dl-corrige')?.addEventListener('click', async () => {
+          await sb.from('events').insert({
+            user_id: session.user.id, cours_id: null, type: 'annale_corrige_dl'
+          })
+        })
+
+        // Scroll to corrigé
+        document.getElementById('iframe-corrige')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  </script>
+</body>
+</html>

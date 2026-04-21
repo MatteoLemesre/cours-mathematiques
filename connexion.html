@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/cours/seconde">Cours</a></li>
+        <li><a href="/annales">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <a href="/inscription" class="btn btn-ghost btn-sm">S'inscrire</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="auth-page">
+      <div class="auth-card fade-in">
+        <h1>Connexion</h1>
+        <p class="subtitle">Content de te revoir !</p>
+
+        <div id="alert-error" class="alert alert-error" style="display:none; margin-bottom:1.25rem;" role="alert">
+          <span id="alert-error-msg"></span>
+        </div>
+
+        <form id="form-connexion" class="form-stack" novalidate>
+          <div class="form-group">
+            <label for="email">Adresse email</label>
+            <input type="email" id="email" class="input" placeholder="ton@email.com"
+                   required autocomplete="email" inputmode="email">
+          </div>
+
+          <div class="form-group">
+            <label for="password" style="display:flex; justify-content:space-between; align-items:center;">
+              Mot de passe
+              <a href="/reinitialiser" style="font-size:.8125rem; font-weight:400;">Oublié ?</a>
+            </label>
+            <input type="password" id="password" class="input" placeholder="••••••••"
+                   required autocomplete="current-password">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit" style="width:100%; margin-top:.25rem;">
+            Se connecter
+          </button>
+        </form>
+
+        <p style="text-align:center; margin-top:1.5rem; font-size:.9rem; color:var(--text-muted);">
+          Pas encore de compte ? <a href="/inscription">S'inscrire</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script>
+    /* Redirige si déjà connecté */
+    sb.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return
+      const { data: profil } = await sb.from('profils').select('classe').eq('id', session.user.id).single()
+      window.location.replace(`/cours/${profil?.classe || 'seconde'}`)
+    })
+
+    const form      = document.getElementById('form-connexion')
+    const btnSubmit = document.getElementById('btn-submit')
+    const alertBox  = document.getElementById('alert-error')
+    const alertMsg  = document.getElementById('alert-error-msg')
+
+    function showError (msg) {
+      alertMsg.textContent = msg
+      alertBox.style.display = 'flex'
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault()
+      alertBox.style.display = 'none'
+      btnSubmit.disabled = true
+      btnSubmit.textContent = 'Connexion…'
+
+      const email    = document.getElementById('email').value.trim()
+      const password = document.getElementById('password').value
+
+      if (!email || !password) {
+        showError('Remplis tous les champs.')
+        btnSubmit.disabled = false
+        btnSubmit.textContent = 'Se connecter'
+        return
+      }
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password })
+
+      if (error) {
+        btnSubmit.disabled = false
+        btnSubmit.textContent = 'Se connecter'
+        if (error.message.includes('Invalid login credentials')) {
+          showError('Email ou mot de passe incorrect.')
+        } else if (error.message.includes('Email not confirmed')) {
+          showError('Confirme ton adresse email avant de te connecter.')
+        } else {
+          showError(error.message)
+        }
+        return
+      }
+
+      /* Récupère la classe pour la redirection */
+      const { data: profil } = await sb
+        .from('profils')
+        .select('classe')
+        .eq('id', data.user.id)
+        .single()
+
+      window.location.replace(`/cours/${profil?.classe || 'seconde'}`)
+    })
+  </script>
+</body>
+</html>

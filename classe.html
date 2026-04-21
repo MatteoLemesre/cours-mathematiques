@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cours — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    .classe-header {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .classe-header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .classe-header h1 { margin-bottom: .25rem; }
+    .classe-header .subtitle { color: var(--text-muted); }
+
+    .progress-section { padding: 1.5rem 0; }
+
+    .demo-banner {
+      background: rgba(0,102,255,.06);
+      border: 1px solid rgba(0,102,255,.2);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .demo-banner p { color: var(--text); font-size: .9375rem; line-height: 1.5; }
+
+    .theme-group { margin-bottom: 2.5rem; }
+    .theme-group-title {
+      font-size: .8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .chapitres-list {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+    .chapitre-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.125rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all var(--transition);
+    }
+    .chapitre-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: var(--text);
+    }
+    .chapitre-card-info { flex: 1; min-width: 0; }
+    .chapitre-card-title {
+      font-size: .9375rem;
+      font-weight: 600;
+      margin-bottom: .5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chapitre-card-meta {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+    .check-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .75rem;
+      font-weight: 600;
+      padding: .15em .55em;
+      border-radius: 999px;
+    }
+    .check-pill.done { background: rgba(34,197,94,.12); color: #16a34a; }
+    .check-pill.todo { background: var(--border); color: var(--text-muted); }
+    [data-theme="dark"] .check-pill.done { color: #4ade80; }
+
+    .chapitre-card-progress { width: 120px; flex-shrink: 0; }
+
+    .content-area { padding: 2rem 0 4rem; }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--text-muted);
+    }
+    .empty-state p { margin-top: .5rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/" >Accueil</a></li>
+        <li><a href="/annales">Annales</a></li>
+        <li><a href="/recherche">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <div id="nav-guest" style="display:flex;gap:.5rem;">
+          <a href="/connexion" class="btn btn-ghost btn-sm">Connexion</a>
+          <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+        </div>
+        <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
+          <a href="/profil" class="btn btn-ghost btn-sm" id="nav-prenom">Mon profil</a>
+          <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="classe-header">
+      <div class="container">
+        <div class="classe-header-inner">
+          <div>
+            <h1 id="classe-title">Chargement…</h1>
+            <p class="subtitle" id="classe-subtitle"></p>
+          </div>
+          <a href="/recherche" class="btn btn-secondary btn-sm">🔍 Rechercher</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Barre de progression globale -->
+      <div class="progress-section" id="progress-section" style="display:none;">
+        <div class="progress-label">
+          <span>Progression globale</span>
+          <span id="progress-text">0 / 0 chapitres lus</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="content-area" id="content-area">
+        <div style="text-align:center;padding:4rem 0;">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    const CLASS_LABELS = {
+      seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+    }
+    const THEME_COLORS = {
+      'Analyse': 'badge-blue', 'Algèbre': 'badge-purple', 'Géométrie': 'badge-green',
+      'Probabilités': 'badge-orange', 'Statistiques': 'badge-orange',
+      'Arithmétique': 'badge-red', 'Trigonométrie': 'badge-green',
+    }
+    function themeColor (t) { return THEME_COLORS[t] || 'badge-muted' }
+
+    const parts   = window.location.pathname.split('/')
+    const classe  = parts[2] || 'seconde'
+    const label   = CLASS_LABELS[classe] || classe
+
+    document.title = `${label} — Matteo Lemesre`
+    document.getElementById('classe-title').textContent = label
+
+    async function init () {
+      const { data: { session } } = await sb.auth.getSession()
+
+      if (session) {
+        document.getElementById('nav-guest').style.display = 'none'
+        document.getElementById('nav-user').style.display = 'flex'
+        const { data: profil } = await sb.from('profils').select('prenom').eq('id', session.user.id).single()
+        if (profil?.prenom) document.getElementById('nav-prenom').textContent = profil.prenom
+
+        document.getElementById('btn-deconnexion')?.addEventListener('click', async () => {
+          await sb.auth.signOut()
+          window.location.reload()
+        })
+
+        await loadFull(session.user.id)
+      } else {
+        await loadDemo()
+      }
+    }
+
+    async function loadFull (userId) {
+      const [{ data: cours }, { data: progression }] = await Promise.all([
+        sb.from('cours').select('id,titre,slug,theme,ordre').eq('classe', classe).eq('est_publie', true).order('ordre'),
+        sb.from('progression').select('cours_id,cours_lu,td_fait').eq('user_id', userId),
+      ])
+
+      if (!cours || cours.length === 0) {
+        showEmpty()
+        return
+      }
+
+      const progMap = {}
+      if (progression) {
+        for (const p of progression) progMap[p.cours_id] = p
+      }
+
+      // Progression bar
+      const total = cours.length
+      const lu    = cours.filter(c => progMap[c.id]?.cours_lu).length
+      document.getElementById('progress-section').style.display = 'block'
+      document.getElementById('progress-text').textContent = `${lu} / ${total} chapitres lus`
+      document.getElementById('progress-bar').style.width = `${total ? Math.round(lu / total * 100) : 0}%`
+      document.getElementById('classe-subtitle').textContent = `${total} chapitre${total !== 1 ? 's' : ''}`
+
+      // Group by theme
+      const themes = {}
+      for (const c of cours) {
+        if (!themes[c.theme]) themes[c.theme] = []
+        themes[c.theme].push(c)
+      }
+
+      const area = document.getElementById('content-area')
+      area.innerHTML = Object.entries(themes).map(([theme, items]) => `
+        <div class="theme-group">
+          <div class="theme-group-title">
+            <span class="badge ${themeColor(theme)}">${theme}</span>
+          </div>
+          <div class="chapitres-list">
+            ${items.map(c => {
+              const p = progMap[c.id] || {}
+              const pct = (p.cours_lu ? 50 : 0) + (p.td_fait ? 50 : 0)
+              return `<a href="/cours/${classe}/${c.slug}" class="chapitre-card">
+                <div class="chapitre-card-info">
+                  <div class="chapitre-card-title">${c.titre}</div>
+                  <div class="chapitre-card-meta">
+                    <span class="check-pill ${p.cours_lu ? 'done' : 'todo'}">${p.cours_lu ? '✓' : '○'} Cours lu</span>
+                    <span class="check-pill ${p.td_fait ? 'done' : 'todo'}">${p.td_fait ? '✓' : '○'} TD fait</span>
+                  </div>
+                </div>
+                <div class="chapitre-card-progress">
+                  <div class="progress-label" style="font-size:.75rem;">
+                    <span></span><span>${pct}%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar${pct === 100 ? ' green' : ''}" style="width:${pct}%"></div>
+                  </div>
+                </div>
+              </a>`
+            }).join('')}
+          </div>
+        </div>`
+      ).join('')
+    }
+
+    async function loadDemo () {
+      const { data: demo } = await sb
+        .from('cours')
+        .select('id,titre,slug,theme')
+        .eq('classe', classe)
+        .eq('est_publie', true)
+        .eq('est_demo', true)
+        .order('ordre')
+        .limit(1)
+        .single()
+
+      const { data: total } = await sb
+        .from('cours')
+        .select('id', { count: 'exact', head: true })
+        .eq('classe', classe)
+        .eq('est_publie', true)
+
+      const n = total?.length ?? '?'
+      document.getElementById('classe-subtitle').textContent = `${n} chapitres disponibles`
+
+      const area = document.getElementById('content-area')
+      area.innerHTML = `
+        <div class="demo-banner">
+          <p>👋 Tu consultes en mode démo. <strong>Inscris-toi gratuitement</strong> pour accéder aux ${n} chapitres de ${label}.</p>
+          <div style="display:flex;gap:.5rem;flex-shrink:0;">
+            <a href="/connexion" class="btn btn-secondary btn-sm">Connexion</a>
+            <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
+          </div>
+        </div>
+        ${demo ? `
+        <div class="theme-group">
+          <div class="theme-group-title">
+            <span class="badge ${themeColor(demo.theme)}">${demo.theme}</span>
+            &nbsp;— Aperçu gratuit
+          </div>
+          <div class="chapitres-list">
+            <a href="/cours/${classe}/${demo.slug}" class="chapitre-card">
+              <div class="chapitre-card-info">
+                <div class="chapitre-card-title">${demo.titre}</div>
+                <div class="chapitre-card-meta">
+                  <span class="badge badge-green">Accès gratuit</span>
+                </div>
+              </div>
+              <span style="color:var(--accent);font-size:.875rem;font-weight:600;">Lire →</span>
+            </a>
+          </div>
+        </div>` : ''}
+        <div style="text-align:center;padding:2rem 0;color:var(--text-muted);font-size:.9rem;">
+          🔒 Les autres chapitres nécessitent un compte
+        </div>`
+    }
+
+    function showEmpty () {
+      document.getElementById('content-area').innerHTML = `
+        <div class="empty-state">
+          <div style="font-size:2rem;">📭</div>
+          <h3>Aucun cours disponible</h3>
+          <p>Les chapitres de ${label} seront bientôt en ligne.</p>
+        </div>`
+    }
+
+    init()
+  </script>
+</body>
+</html>

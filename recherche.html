@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recherche — Matteo Lemesre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    .search-hero {
+      padding: 3rem 0 2rem;
+    }
+    .search-box-wrap {
+      position: relative;
+      max-width: 640px;
+      margin-top: 1.5rem;
+    }
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.125rem;
+      pointer-events: none;
+    }
+    #search-input {
+      width: 100%;
+      padding: .75rem 1rem .75rem 2.75rem;
+      font-size: 1.0625rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-family: var(--font);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    #search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,102,255,.12);
+    }
+    #search-input::placeholder { color: var(--text-muted); opacity: .65; }
+
+    .results-area { padding: 1.5rem 0 5rem; }
+
+    .results-section { margin-bottom: 2.5rem; }
+    .results-section-title {
+      font-size: .8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-muted);
+      margin-bottom: .875rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+    }
+    .results-count-badge {
+      background: var(--border);
+      color: var(--text-muted);
+      font-size: .6875rem;
+      padding: .1em .55em;
+      border-radius: 999px;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .875rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: .5rem;
+      text-decoration: none;
+      color: var(--text);
+      background: var(--surface);
+      transition: all var(--transition);
+    }
+    .result-item:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: var(--text);
+    }
+    .result-item-info { flex: 1; min-width: 0; }
+    .result-item-title {
+      font-size: .9375rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .result-item-sub {
+      font-size: .8125rem;
+      color: var(--text-muted);
+      margin-top: .2rem;
+    }
+    .result-item-arrow { color: var(--text-muted); font-size: .875rem; flex-shrink: 0; }
+
+    .empty-search {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-muted);
+    }
+
+    .initial-state {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">Matteo Lemesre</a>
+      <ul class="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/annales">Annales</a></li>
+        <li><a href="/recherche" class="active">Recherche</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
+          <span id="theme-icon">☽</span>
+        </button>
+        <a href="/profil" class="btn btn-ghost btn-sm">Mon profil</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="search-hero">
+      <div class="container">
+        <h1>Rechercher</h1>
+        <p style="color:var(--text-muted);max-width:480px;margin-top:.375rem;">
+          Cours, chapitres et annales — recherche par titre, thème ou classe.
+        </p>
+        <div class="search-box-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="search"
+            id="search-input"
+            placeholder="Ex : limites, algèbre, Bac 2023…"
+            autocomplete="off"
+            autofocus
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="results-area">
+      <div class="container">
+        <div id="results-wrapper">
+          <div class="initial-state">
+            <div style="font-size:2rem;">✍️</div>
+            <p style="margin-top:.5rem;">Commence à taper pour chercher…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Matteo Lemesre</span>
+      <span>Cours de mathématiques — Lycée &amp; Prépa</span>
+    </div>
+  </footer>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7/dist/fuse.min.js"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    const CLASS_LABELS = {
+      seconde: 'Seconde', premiere: 'Première', terminale: 'Terminale', mpsi: 'MPSI', mp: 'MP'
+    }
+    const THEME_COLORS = {
+      'Analyse': 'badge-blue', 'Algèbre': 'badge-purple', 'Géométrie': 'badge-green',
+      'Probabilités': 'badge-orange', 'Statistiques': 'badge-orange', 'Arithmétique': 'badge-red',
+    }
+    function themeColor (t) { return THEME_COLORS[t] || 'badge-muted' }
+
+    let fuseCours   = null
+    let fuseSujets  = null
+    let allCours    = []
+    let allSujets   = []
+
+    window.onAuthReady = async function (session, profil) {
+      await loadData()
+
+      const input = document.getElementById('search-input')
+      input.addEventListener('input', () => {
+        const q = input.value.trim()
+        if (!q) {
+          document.getElementById('results-wrapper').innerHTML = `
+            <div class="initial-state">
+              <div style="font-size:2rem;">✍️</div>
+              <p style="margin-top:.5rem;">Commence à taper pour chercher…</p>
+            </div>`
+          return
+        }
+        renderResults(q)
+      })
+    }
+
+    async function loadData () {
+      const [{ data: cours }, { data: sujets }] = await Promise.all([
+        sb.from('cours').select('id,titre,slug,classe,theme').eq('est_publie', true),
+        sb.from('sujets').select('id,titre,slug,classe,themes,annee,type').eq('est_publie', true),
+      ])
+
+      allCours  = cours  || []
+      allSujets = sujets || []
+
+      fuseCours = new Fuse(allCours, {
+        keys: ['titre', 'theme', 'classe'],
+        threshold: 0.35,
+        includeScore: true,
+      })
+
+      fuseSujets = new Fuse(allSujets, {
+        keys: ['titre', { name: 'themes', weight: 0.7 }, 'classe'],
+        threshold: 0.35,
+        includeScore: true,
+      })
+    }
+
+    function renderResults (query) {
+      const resCours  = fuseCours  ? fuseCours.search(query).slice(0, 8)  : []
+      const resSujets = fuseSujets ? fuseSujets.search(query).slice(0, 8) : []
+
+      if (!resCours.length && !resSujets.length) {
+        document.getElementById('results-wrapper').innerHTML = `
+          <div class="empty-search">
+            <div style="font-size:2rem;">🤷</div>
+            <p style="margin-top:.5rem;">Aucun résultat pour "<strong>${escHtml(query)}</strong>".</p>
+          </div>`
+        return
+      }
+
+      let html = ''
+
+      if (resCours.length) {
+        html += `<div class="results-section">
+          <div class="results-section-title">
+            Cours
+            <span class="results-count-badge">${resCours.length}</span>
+          </div>
+          ${resCours.map(({ item: c }) => `
+            <a href="/cours/${c.classe}/${c.slug}" class="result-item">
+              <div class="result-item-info">
+                <div class="result-item-title">${escHtml(c.titre)}</div>
+                <div class="result-item-sub">
+                  ${CLASS_LABELS[c.classe] || c.classe}
+                  ${c.theme ? ` · <span class="badge ${themeColor(c.theme)}" style="font-size:.7rem;">${escHtml(c.theme)}</span>` : ''}
+                </div>
+              </div>
+              <span class="result-item-arrow">→</span>
+            </a>`).join('')}
+        </div>`
+      }
+
+      if (resSujets.length) {
+        html += `<div class="results-section">
+          <div class="results-section-title">
+            Annales
+            <span class="results-count-badge">${resSujets.length}</span>
+          </div>
+          ${resSujets.map(({ item: s }) => `
+            <a href="/annales/${s.slug}" class="result-item">
+              <div class="result-item-info">
+                <div class="result-item-title">${escHtml(s.titre)}</div>
+                <div class="result-item-sub">
+                  ${s.annee ? s.annee + ' · ' : ''}
+                  ${CLASS_LABELS[s.classe] || s.classe || ''}
+                  ${s.themes && s.themes.length
+                    ? ' · ' + s.themes.slice(0, 2).map(t =>
+                        `<span class="badge ${themeColor(t)}" style="font-size:.7rem;">${escHtml(t)}</span>`).join(' ')
+                    : ''}
+                </div>
+              </div>
+              <span class="result-item-arrow">→</span>
+            </a>`).join('')}
+        </div>`
+      }
+
+      document.getElementById('results-wrapper').innerHTML = html
+    }
+
+    function escHtml (str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    }
+  </script>
+</body>
+</html>

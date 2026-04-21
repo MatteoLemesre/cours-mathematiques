@@ -1,0 +1,39 @@
+{
+  "rewrites": [
+    { "source": "/connexion",           "destination": "/connexion.html" },
+    { "source": "/inscription",         "destination": "/inscription.html" },
+    { "source": "/reinitialiser",       "destination": "/reinitialiser.html" },
+    { "source": "/nouveau-mdp",         "destination": "/nouveau-mdp.html" },
+    { "source": "/profil",              "destination": "/profil.html" },
+    { "source": "/cours/:classe",       "destination": "/classe.html" },
+    { "source": "/cours/:classe/:slug", "destination": "/chapitre.html" },
+    { "source": "/annales",             "destination": "/annales.html" },
+    { "source": "/annales/:slug",       "destination": "/annale.html" },
+    { "source": "/recherche",           "destination": "/recherche.html" },
+    { "source": "/admin",               "destination": "/admin/index.html" },
+    { "source": "/admin/cours",         "destination": "/admin/cours.html" },
+    { "source": "/admin/cours/:slug",   "destination": "/admin/chapitre.html" },
+    { "source": "/admin/annales",       "destination": "/admin/annales.html" },
+    { "source": "/admin/eleves",        "destination": "/admin/eleves.html" },
+    { "source": "/admin/stats",         "destination": "/admin/stats.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options",  "value": "nosniff" },
+        { "key": "X-Frame-Options",         "value": "DENY" },
+        { "key": "X-XSS-Protection",        "value": "1; mode=block" },
+        { "key": "Referrer-Policy",         "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",      "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag",  "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}

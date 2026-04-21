@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Édition chapitre — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    body { padding-top: 0; }
+    .admin-wrap { display: flex; min-height: 100vh; }
+
+    .admin-sidebar {
+      width: 220px; flex-shrink: 0; background: #1A1A1A;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; scrollbar-width: thin;
+    }
+    .admin-logo {
+      padding: 1.25rem 1.125rem .875rem; font-weight: 700; font-size: .9375rem;
+      color: #EBEBEB; text-decoration: none; display: block;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .admin-logo:hover { text-decoration: none; color: #fff; }
+    .admin-logo-sub { display: block; font-size: .6875rem; font-weight: 400; color: #555; margin-top: .2rem; text-transform: uppercase; letter-spacing: .06em; }
+    .admin-nav { flex: 1; padding: .625rem; }
+    .admin-nav-item {
+      display: flex; align-items: center; gap: .5rem; padding: .5rem .625rem; border-radius: 6px;
+      font-size: .875rem; font-family: var(--font); color: #888; text-decoration: none;
+      transition: background .15s, color .15s; margin-bottom: 2px;
+      border: none; background: none; cursor: pointer; width: 100%; text-align: left;
+    }
+    .admin-nav-item:hover { background: rgba(255,255,255,.06); color: #EBEBEB; text-decoration: none; }
+    .admin-nav-item.active { background: rgba(255,255,255,.1); color: #fff; font-weight: 600; }
+    .admin-nav-icon { font-size: .875rem; width: 1.125rem; text-align: center; flex-shrink: 0; }
+    .admin-sidebar-footer { padding: .625rem; border-top: 1px solid rgba(255,255,255,.07); }
+
+    .admin-main { flex: 1; min-width: 0; background: var(--bg); display: flex; flex-direction: column; }
+
+    .admin-topbar {
+      padding: 1rem 1.5rem; display: flex; align-items: center;
+      justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--bg); z-index: 10;
+    }
+    .admin-topbar-left { display: flex; align-items: center; gap: 1rem; }
+    .admin-topbar-left h1 { font-size: 1.125rem; }
+    .admin-topbar-actions { display: flex; align-items: center; gap: .5rem; }
+    .save-status { font-size: .8125rem; color: var(--text-muted); }
+
+    .chapitre-edit-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 57px);
+    }
+    .chapitre-left {
+      padding: 1.125rem; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: .875rem;
+      overflow-y: auto; background: var(--surface);
+    }
+    .chapitre-right { padding: 1.25rem 1.5rem 3rem; overflow-y: auto; }
+
+    .edit-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 1rem;
+    }
+    .edit-card-title {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--text-muted); margin-bottom: .75rem;
+    }
+    .form-row { margin-bottom: .625rem; }
+    .form-row label { display: block; font-size: .8125rem; font-weight: 500; color: var(--text-muted); margin-bottom: .25rem; }
+    .input-sm { padding: .4rem .65rem; font-size: .875rem; }
+
+    .pdf-upload-item { margin-bottom: .75rem; }
+    .pdf-upload-label { font-size: .8125rem; font-weight: 500; color: var(--text-muted); margin-bottom: .35rem; display: block; }
+    .pdf-file-info { font-size: .8125rem; color: var(--text-muted); margin-top: .3rem; display: flex; align-items: center; gap: .4rem; }
+    .pdf-file-info a { font-size: .8125rem; }
+
+    .bloc-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); margin-bottom: .5rem; overflow: hidden;
+    }
+    .bloc-item.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,102,255,.15); }
+    .bloc-item-header {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .45rem .75rem; background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .drag-handle { cursor: grab; color: var(--text-muted); user-select: none; flex-shrink: 0; font-size: .9375rem; }
+    .drag-handle:active { cursor: grabbing; }
+    .bloc-item-body { padding: .625rem; display: flex; flex-direction: column; gap: .4rem; }
+    .bloc-item-body textarea { font-family: var(--font-mono); font-size: .8125rem; resize: vertical; }
+    .bloc-field-label { font-size: .7rem; font-weight: 600; color: var(--text-muted); margin-bottom: .2rem; }
+
+    .exo-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); margin-bottom: .5rem; overflow: hidden;
+    }
+    .exo-item.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,102,255,.15); }
+    .exo-item-header {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      padding: .45rem .75rem; background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .exo-item-header-left { display: flex; align-items: center; gap: .625rem; }
+    .exo-item-body { padding: .625rem; display: grid; grid-template-columns: 1fr 1fr; gap: .625rem; }
+    .exo-item-body textarea { font-family: var(--font-mono); font-size: .8125rem; resize: vertical; }
+
+    .diff-selector { display: flex; gap: 4px; cursor: pointer; }
+    .diff-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background .15s; }
+    .diff-dot.active { background: var(--accent); }
+
+    .add-bloc-btns { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .875rem; }
+    .btn-add-type {
+      font-size: .8125rem; padding: .3rem .75rem; border-radius: var(--radius-sm);
+      border: 1px solid; background: transparent; cursor: pointer;
+      font-family: var(--font); transition: opacity .15s;
+    }
+    .btn-add-type:hover { opacity: .75; }
+
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999;
+      padding: .625rem 1.125rem; border-radius: 8px;
+      font-size: .875rem; font-weight: 500; color: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2); animation: fadeIn .2s ease;
+      pointer-events: none;
+    }
+    .toast-success { background: #16a34a; }
+    .toast-error   { background: #dc2626; }
+
+    @media (max-width: 1000px) {
+      .chapitre-edit-layout { grid-template-columns: 1fr; }
+      .chapitre-left { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+
+  <aside class="admin-sidebar">
+    <a href="/admin" class="admin-logo">
+      Matteo Lemesre
+      <span class="admin-logo-sub">Administration</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="/admin"         class="admin-nav-item"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/cours"   class="admin-nav-item active"><span class="admin-nav-icon">📖</span> Cours</a>
+      <a href="/admin/annales" class="admin-nav-item"><span class="admin-nav-icon">📝</span> Annales</a>
+      <a href="/admin/eleves"  class="admin-nav-item"><span class="admin-nav-icon">👥</span> Élèves</a>
+      <a href="/admin/stats"   class="admin-nav-item"><span class="admin-nav-icon">📈</span> Stats</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="/" class="admin-nav-item"><span class="admin-nav-icon">↗</span> Voir le site</a>
+      <button class="admin-nav-item" id="btn-logout"><span class="admin-nav-icon">🚪</span> Déconnexion</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <a href="/admin/cours" style="color:var(--text-muted);font-size:.875rem;text-decoration:none;white-space:nowrap;">← Cours</a>
+        <h1 id="page-title">Nouveau chapitre</h1>
+      </div>
+      <div class="admin-topbar-actions">
+        <span class="save-status" id="save-status"></span>
+        <button class="btn btn-secondary btn-sm" id="btn-brouillon">Brouillon</button>
+        <button class="btn btn-primary btn-sm"   id="btn-publier">Publier</button>
+      </div>
+    </div>
+
+    <div class="chapitre-edit-layout">
+
+      <!-- Left: infos + PDFs -->
+      <div class="chapitre-left">
+        <div class="edit-card">
+          <div class="edit-card-title">Informations</div>
+          <div class="form-row">
+            <label>Titre *</label>
+            <input type="text" id="cours-titre" class="input input-sm" placeholder="ex : Limites de fonctions">
+          </div>
+          <div class="form-row">
+            <label>Classe *</label>
+            <select id="cours-classe" class="input input-sm">
+              <option value="">— Choisir —</option>
+              <option value="seconde">Seconde</option>
+              <option value="premiere">Première</option>
+              <option value="terminale">Terminale</option>
+              <option value="mpsi">MPSI</option>
+              <option value="mp">MP</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Thème</label>
+            <input type="text" id="cours-theme" class="input input-sm" placeholder="ex : Analyse">
+          </div>
+          <div class="form-row">
+            <label>Ordre</label>
+            <input type="number" id="cours-ordre" class="input input-sm" value="1" min="1">
+          </div>
+          <div class="form-row">
+            <label>Slug (URL)</label>
+            <input type="text" id="cours-slug" class="input input-sm" placeholder="auto depuis le titre">
+          </div>
+          <div class="form-row" style="display:flex;align-items:center;gap:.5rem;margin-top:.25rem;">
+            <input type="checkbox" id="cours-demo" style="width:auto;flex-shrink:0;">
+            <label for="cours-demo" style="margin:0;color:var(--text);font-size:.875rem;">Accès démo (sans compte)</label>
+          </div>
+        </div>
+
+        <div class="edit-card">
+          <div class="edit-card-title">Fichiers PDF</div>
+          <div class="pdf-upload-item">
+            <span class="pdf-upload-label">PDF du cours</span>
+            <input type="file" id="upload-cours-pdf" accept="application/pdf" class="input input-sm">
+            <div class="pdf-file-info" id="info-cours-pdf" style="display:none;"></div>
+            <button class="btn btn-danger btn-sm" id="btn-del-cours-pdf" style="margin-top:.3rem;display:none;">Supprimer</button>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:.75rem 0;">
+          <div class="pdf-upload-item">
+            <span class="pdf-upload-label">PDF fiche résumé</span>
+            <input type="file" id="upload-fiche-pdf" accept="application/pdf" class="input input-sm">
+            <div class="pdf-file-info" id="info-fiche-pdf" style="display:none;"></div>
+            <button class="btn btn-danger btn-sm" id="btn-del-fiche-pdf" style="margin-top:.3rem;display:none;">Supprimer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: blocs + exercices -->
+      <div class="chapitre-right">
+        <div class="tabs" style="margin-bottom:1.25rem;">
+          <button class="tab-btn active" data-tab="blocs">Cours — blocs</button>
+          <button class="tab-btn" data-tab="exercices">TD — exercices</button>
+        </div>
+
+        <div id="panel-blocs" class="tab-panel active">
+          <div id="blocs-list"></div>
+          <div class="add-bloc-btns">
+            <button class="btn-add-type" data-type="definition" style="border-color:#0066FF;color:#0066FF;">+ Définition</button>
+            <button class="btn-add-type" data-type="theoreme"   style="border-color:#7c3aed;color:#7c3aed;">+ Théorème</button>
+            <button class="btn-add-type" data-type="propriete"  style="border-color:#059669;color:#059669;">+ Propriété</button>
+            <button class="btn-add-type" data-type="remarque"   style="border-color:#d97706;color:#d97706;">+ Remarque</button>
+          </div>
+        </div>
+
+        <div id="panel-exercices" class="tab-panel">
+          <div id="exercices-list"></div>
+          <button class="btn btn-secondary btn-sm" id="btn-add-exo" style="margin-top:.625rem;">+ Ajouter un exercice</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase.js"></script>
+<script src="/js/admin-guard.js"></script>
+<script>
+  const BLOC_BADGE = { definition: 'badge-blue', theoreme: 'badge-purple', propriete: 'badge-green', remarque: 'badge-orange' }
+
+  const urlParts = window.location.pathname.split('/')
+  const urlSlug  = urlParts[3] || 'nouveau'
+  const isNew    = urlSlug === 'nouveau'
+
+  let currentCours = null
+  const debounceTimers = {}
+
+  function debounce (key, fn, ms = 1000) {
+    clearTimeout(debounceTimers[key])
+    debounceTimers[key] = setTimeout(fn, ms)
+  }
+  function slugify (str) {
+    return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-')
+  }
+  function showToast (msg, type = 'success') {
+    const t = document.createElement('div')
+    t.className = `toast toast-${type}`; t.textContent = msg
+    document.body.appendChild(t); setTimeout(() => t.remove(), 3000)
+  }
+  function setSaveStatus (msg) {
+    const el = document.getElementById('save-status')
+    el.textContent = msg
+    setTimeout(() => { if (el.textContent === msg) el.textContent = '' }, 4000)
+  }
+  function escAttr (s) { return String(s).replace(/"/g, '&quot;') }
+  function escText (s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+  window.onAuthReady = async function (session, profil) {
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await sb.auth.signOut(); window.location.replace('/connexion')
+    })
+
+    // Auto slug from titre
+    document.getElementById('cours-titre').addEventListener('input', function () {
+      const s = document.getElementById('cours-slug')
+      if (!s._userEdited) s.value = slugify(this.value)
+    })
+    document.getElementById('cours-slug').addEventListener('input', function () { this._userEdited = true })
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'))
+        btn.classList.add('active')
+        document.getElementById(`panel-${btn.dataset.tab}`).classList.add('active')
+      })
+    })
+
+    document.getElementById('btn-brouillon').addEventListener('click', () => saveCours(false))
+    document.getElementById('btn-publier').addEventListener('click', () => saveCours(!(currentCours?.est_publie)))
+
+    document.getElementById('upload-cours-pdf').addEventListener('change', e => uploadPDF(e, 'cours_pdf_url', 'info-cours-pdf', 'btn-del-cours-pdf'))
+    document.getElementById('upload-fiche-pdf').addEventListener('change', e => uploadPDF(e, 'fiche_pdf_url', 'info-fiche-pdf', 'btn-del-fiche-pdf'))
+    document.getElementById('btn-del-cours-pdf').addEventListener('click', () => deletePDF('cours_pdf_url', 'info-cours-pdf', 'btn-del-cours-pdf'))
+    document.getElementById('btn-del-fiche-pdf').addEventListener('click', () => deletePDF('fiche_pdf_url', 'info-fiche-pdf', 'btn-del-fiche-pdf'))
+
+    document.querySelectorAll('.btn-add-type').forEach(btn => {
+      btn.addEventListener('click', () => addBloc(btn.dataset.type))
+    })
+    document.getElementById('btn-add-exo').addEventListener('click', addExercice)
+
+    if (!isNew) {
+      await loadCours()
+    } else {
+      const msg = '<p style="color:var(--text-muted);font-size:.875rem;">Enregistrez le cours pour ajouter du contenu.</p>'
+      document.getElementById('blocs-list').innerHTML = msg
+      document.getElementById('exercices-list').innerHTML = msg
+    }
+  }
+
+  async function loadCours () {
+    const { data: cours, error } = await sb.from('cours').select('*').eq('slug', urlSlug).single()
+    if (error || !cours) { showToast('Cours introuvable', 'error'); return }
+
+    currentCours = cours
+    document.title = `${cours.titre} — Admin`
+    document.getElementById('page-title').textContent = cours.titre
+    document.getElementById('cours-titre').value  = cours.titre  || ''
+    document.getElementById('cours-classe').value = cours.classe || ''
+    document.getElementById('cours-theme').value  = cours.theme  || ''
+    document.getElementById('cours-ordre').value  = cours.ordre  || 1
+    document.getElementById('cours-slug').value   = cours.slug   || ''
+    document.getElementById('cours-demo').checked = cours.est_demo || false
+    document.getElementById('btn-publier').textContent = cours.est_publie ? 'Dépublier' : 'Publier'
+
+    if (cours.cours_pdf_url) showPDFInfo('info-cours-pdf', 'btn-del-cours-pdf', cours.cours_pdf_url)
+    if (cours.fiche_pdf_url) showPDFInfo('info-fiche-pdf', 'btn-del-fiche-pdf', cours.fiche_pdf_url)
+
+    await Promise.all([loadBlocs(), loadExercices()])
+  }
+
+  async function saveCours (publie) {
+    const titre  = document.getElementById('cours-titre').value.trim()
+    const classe = document.getElementById('cours-classe').value
+    if (!titre || !classe) { showToast('Titre et classe requis', 'error'); return }
+
+    const slug  = document.getElementById('cours-slug').value.trim() || slugify(titre)
+    const payload = {
+      titre, classe,
+      theme:      document.getElementById('cours-theme').value.trim(),
+      ordre:      parseInt(document.getElementById('cours-ordre').value) || 1,
+      slug,
+      est_demo:   document.getElementById('cours-demo').checked,
+      est_publie: publie,
+    }
+
+    if (currentCours) {
+      const { error } = await sb.from('cours').update(payload).eq('id', currentCours.id)
+      if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+      currentCours = { ...currentCours, ...payload }
+    } else {
+      const { data, error } = await sb.from('cours').insert(payload).select().single()
+      if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+      currentCours = data
+      window.history.replaceState(null, '', `/admin/cours/${data.slug}`)
+      document.getElementById('page-title').textContent = data.titre
+      await loadBlocs(); await loadExercices()
+    }
+
+    document.getElementById('btn-publier').textContent = currentCours.est_publie ? 'Dépublier' : 'Publier'
+    showToast(publie ? 'Publié ✓' : 'Brouillon enregistré ✓')
+  }
+
+  /* PDF */
+  async function uploadPDF (e, field, infoId, btnId) {
+    const file = e.target.files[0]; if (!file) return
+    if (!currentCours) { showToast('Enregistrez le cours d\'abord', 'error'); return }
+    const tag  = field === 'cours_pdf_url' ? 'cours' : 'fiche'
+    const path = `${currentCours.id}/${tag}.pdf`
+    const { error } = await sb.storage.from('cours-pdf').upload(path, file, { upsert: true })
+    if (error) { showToast('Erreur upload : ' + error.message, 'error'); return }
+    const { data: { publicUrl } } = sb.storage.from('cours-pdf').getPublicUrl(path)
+    await sb.from('cours').update({ [field]: publicUrl }).eq('id', currentCours.id)
+    currentCours[field] = publicUrl
+    showPDFInfo(infoId, btnId, publicUrl)
+    e.target.value = ''
+    showToast('PDF uploadé ✓')
+  }
+  function showPDFInfo (infoId, btnId, url) {
+    const name = decodeURIComponent(url.split('/').pop())
+    const el   = document.getElementById(infoId)
+    el.innerHTML = `📄 <a href="${url}" target="_blank">${name.length > 36 ? name.slice(0,36)+'…' : name}</a>`
+    el.style.display = 'flex'
+    document.getElementById(btnId).style.display = 'inline-flex'
+  }
+  async function deletePDF (field, infoId, btnId) {
+    if (!currentCours) return
+    await sb.from('cours').update({ [field]: null }).eq('id', currentCours.id)
+    currentCours[field] = null
+    document.getElementById(infoId).style.display = 'none'
+    document.getElementById(btnId).style.display  = 'none'
+    showToast('PDF supprimé')
+  }
+
+  /* ── Blocs ── */
+  async function loadBlocs () {
+    if (!currentCours) return
+    const { data } = await sb.from('blocs').select('*').eq('cours_id', currentCours.id).order('ordre')
+    const list = document.getElementById('blocs-list'); list.innerHTML = ''
+    ;(data || []).forEach(b => list.appendChild(createBlocEl(b)))
+    setupDrag(list, saveBlocsOrder)
+  }
+
+  function createBlocEl (bloc) {
+    const div = Object.assign(document.createElement('div'), { className: 'bloc-item', draggable: true })
+    div.dataset.id = bloc.id
+    div.innerHTML = `
+      <div class="bloc-item-header">
+        <span class="drag-handle">⋮⋮</span>
+        <span class="badge ${BLOC_BADGE[bloc.type] || 'badge-muted'}" style="flex-shrink:0;">${bloc.type}</span>
+        <input type="text" class="input input-sm bloc-titre" placeholder="Titre (optionnel)"
+               value="${escAttr(bloc.titre || '')}" style="flex:1;min-width:0;">
+        <button class="btn btn-danger btn-sm btn-del" data-id="${bloc.id}" style="flex-shrink:0;">✕</button>
+      </div>
+      <div class="bloc-item-body">
+        <div>
+          <div class="bloc-field-label">Énoncé (LaTeX : $…$ ou $$…$$)</div>
+          <textarea class="input bloc-enonce" rows="3">${escText(bloc.enonce || '')}</textarea>
+        </div>
+        <div>
+          <div class="bloc-field-label">Conseil / démonstration (optionnel)</div>
+          <textarea class="input bloc-conseil" rows="2" placeholder="Conseil optionnel...">${escText(bloc.conseil || '')}</textarea>
+        </div>
+      </div>`
+
+    const save = () => debounce(`b-${bloc.id}`, async () => {
+      await sb.from('blocs').update({
+        cours_id: currentCours.id,
+        titre:    div.querySelector('.bloc-titre').value,
+        enonce:   div.querySelector('.bloc-enonce').value,
+        conseil:  div.querySelector('.bloc-conseil').value,
+      }).eq('id', bloc.id)
+      setSaveStatus('Sauvegardé ✓')
+    })
+    div.querySelector('.bloc-titre').addEventListener('input', save)
+    div.querySelector('.bloc-enonce').addEventListener('input', save)
+    div.querySelector('.bloc-conseil').addEventListener('input', save)
+    div.querySelector('.btn-del').addEventListener('click', async () => {
+      await sb.from('blocs').delete().eq('id', bloc.id); div.remove()
+    })
+    return div
+  }
+
+  async function addBloc (type) {
+    if (!currentCours) { showToast('Enregistrez le cours d\'abord', 'error'); return }
+    const list  = document.getElementById('blocs-list')
+    const ordre = list.querySelectorAll('[draggable]').length + 1
+    const { data, error } = await sb.from('blocs').insert({
+      cours_id: currentCours.id, type, titre: '', enonce: '', conseil: '', ordre
+    }).select().single()
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    const el = createBlocEl(data)
+    list.appendChild(el)
+    setupDrag(list, saveBlocsOrder)
+    el.querySelector('.bloc-enonce').focus()
+  }
+
+  async function saveBlocsOrder () {
+    const items = [...document.getElementById('blocs-list').querySelectorAll('[draggable]')]
+    await sb.from('blocs').upsert(items.map((el, i) => ({ id: el.dataset.id, ordre: i + 1, cours_id: currentCours.id })))
+    setSaveStatus('Ordre enregistré ✓')
+  }
+
+  /* ── Exercices ── */
+  async function loadExercices () {
+    if (!currentCours) return
+    const { data } = await sb.from('exercices').select('*').eq('cours_id', currentCours.id).order('ordre')
+    const list = document.getElementById('exercices-list'); list.innerHTML = ''
+    ;(data || []).forEach((ex, i) => list.appendChild(createExoEl(ex, i + 1)))
+    setupDrag(list, saveExosOrder)
+  }
+
+  function createExoEl (ex, num) {
+    const div = Object.assign(document.createElement('div'), { className: 'exo-item', draggable: true })
+    div.dataset.id = ex.id
+    div.innerHTML = `
+      <div class="exo-item-header">
+        <div class="exo-item-header-left">
+          <span class="drag-handle">⋮⋮</span>
+          <span style="font-size:.875rem;font-weight:600;color:var(--text-muted);">Exercice ${num}</span>
+          <div class="diff-selector" title="Difficulté (1-3)">
+            <div class="diff-dot${ex.difficulte >= 1 ? ' active' : ''}" data-level="1"></div>
+            <div class="diff-dot${ex.difficulte >= 2 ? ' active' : ''}" data-level="2"></div>
+            <div class="diff-dot${ex.difficulte >= 3 ? ' active' : ''}" data-level="3"></div>
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm btn-del" data-id="${ex.id}">✕</button>
+      </div>
+      <div class="exo-item-body">
+        <div>
+          <div class="bloc-field-label">Énoncé</div>
+          <textarea class="input exo-enonce" rows="4">${escText(ex.enonce || '')}</textarea>
+        </div>
+        <div>
+          <div class="bloc-field-label">Correction</div>
+          <textarea class="input exo-correction" rows="4">${escText(ex.correction || '')}</textarea>
+        </div>
+      </div>`
+
+    let diff = ex.difficulte || 1
+    div.querySelectorAll('.diff-dot').forEach(dot => {
+      dot.addEventListener('click', async () => {
+        diff = parseInt(dot.dataset.level)
+        div.querySelectorAll('.diff-dot').forEach((d, i) => d.classList.toggle('active', i < diff))
+        await sb.from('exercices').update({ difficulte: diff }).eq('id', ex.id)
+        setSaveStatus('Difficulté enregistrée ✓')
+      })
+    })
+    const save = () => debounce(`e-${ex.id}`, async () => {
+      await sb.from('exercices').update({
+        cours_id: currentCours.id,
+        enonce:      div.querySelector('.exo-enonce').value,
+        correction:  div.querySelector('.exo-correction').value,
+      }).eq('id', ex.id)
+      setSaveStatus('Sauvegardé ✓')
+    })
+    div.querySelector('.exo-enonce').addEventListener('input', save)
+    div.querySelector('.exo-correction').addEventListener('input', save)
+    div.querySelector('.btn-del').addEventListener('click', async () => {
+      await sb.from('exercices').delete().eq('id', ex.id); div.remove()
+    })
+    return div
+  }
+
+  async function addExercice () {
+    if (!currentCours) { showToast('Enregistrez le cours d\'abord', 'error'); return }
+    const list  = document.getElementById('exercices-list')
+    const ordre = list.querySelectorAll('[draggable]').length + 1
+    const { data, error } = await sb.from('exercices').insert({
+      cours_id: currentCours.id, enonce: '', correction: '', difficulte: 1, ordre
+    }).select().single()
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return }
+    const el = createExoEl(data, ordre)
+    list.appendChild(el)
+    setupDrag(list, saveExosOrder)
+    el.querySelector('.exo-enonce').focus()
+  }
+
+  async function saveExosOrder () {
+    const items = [...document.getElementById('exercices-list').querySelectorAll('[draggable]')]
+    await sb.from('exercices').upsert(items.map((el, i) => ({ id: el.dataset.id, ordre: i + 1, cours_id: currentCours.id })))
+    setSaveStatus('Ordre enregistré ✓')
+  }
+
+  /* ── Drag & drop générique ── */
+  function setupDrag (container, onReorder) {
+    // Remove existing listeners by replacing container clone trick not needed — just bind fresh
+    let dragSrc = null
+    container.addEventListener('dragstart', e => {
+      dragSrc = e.target.closest('[draggable]'); if (!dragSrc) return
+      e.dataTransfer.effectAllowed = 'move'
+      setTimeout(() => { if (dragSrc) dragSrc.style.opacity = '.4' }, 0)
+    }, { capture: true })
+    container.addEventListener('dragend', () => {
+      if (dragSrc) dragSrc.style.opacity = ''
+      dragSrc = null
+      container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'))
+    }, { capture: true })
+    container.addEventListener('dragover', e => {
+      e.preventDefault()
+      const t = e.target.closest('[draggable]')
+      if (t && t !== dragSrc) {
+        container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'))
+        t.classList.add('drag-over')
+      }
+    })
+    container.addEventListener('drop', e => {
+      e.preventDefault()
+      const t = e.target.closest('[draggable]')
+      if (!t || t === dragSrc || !dragSrc) return
+      const items = [...container.querySelectorAll('[draggable]')]
+      if (items.indexOf(dragSrc) < items.indexOf(t)) container.insertBefore(dragSrc, t.nextSibling)
+      else container.insertBefore(dragSrc, t)
+      onReorder()
+    })
+  }
+</script>
+
+  <div class="chatbot-bubble" id="chatbot-bubble">
+    <div class="chatbot-tooltip" id="chatbot-tooltip">Bientôt disponible ✨</div>
+    <button class="chatbot-btn" id="chatbot-btn" aria-label="Assistant IA">💬</button>
+  </div>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html>
