@@ -117,9 +117,6 @@
           <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
         </div>
         <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
-          <span id="nav-prenom" style="font-size:.875rem;font-weight:500;color:var(--text-muted);"></span>
-          <a href="/profil" class="btn btn-ghost btn-sm">Profil</a>
-          <a href="/admin" class="btn btn-ghost btn-sm" id="nav-admin" style="display:none">Admin</a>
           <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
         </div>
       </div>
@@ -218,10 +215,10 @@
         }
       }
 
-      await loadClasses()
+      await loadClasses(session)
     }
 
-    async function loadClasses () {
+    async function loadClasses (session) {
       const { data: rows } = await sb
         .from('cours')
         .select('classe')
@@ -237,7 +234,8 @@
       const grid = document.getElementById('classes-grid')
       grid.innerHTML = CLASSES.map(c => {
         const n = countMap[c.slug] || 0
-        return `<a href="/cours/${c.slug}" class="class-card reveal">
+        const href = session ? `/cours/${c.slug}` : '/connexion'
+        return `<a href="${href}" class="class-card reveal">
           <span class="badge ${c.badgeClass}">${c.badge}</span>
           <span class="class-card-name">${c.label}</span>
           <span class="class-card-count">${n} chapitre${n !== 1 ? 's' : ''}</span>

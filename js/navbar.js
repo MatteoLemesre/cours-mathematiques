@@ -42,21 +42,16 @@
     const classe = profil?.classe || ''
     renderLinks(
       li('/', 'Accueil') +
-      (classe ? li(`/cours/${classe}`, 'Mes cours') : '') +
+      (classe ? li(`/cours/${classe}`, 'Cours') : '') +
       li('/annales', 'Annales') +
-      li('/recherche', 'Recherche')
+      li('/recherche', 'Recherche') +
+      li('/profil', 'Profil')
     )
 
     const g = document.getElementById('nav-guest')
     const u = document.getElementById('nav-user')
     if (g) g.style.display = 'none'
     if (u) u.style.display = 'flex'
-
-    const prenomEl = document.getElementById('nav-prenom')
-    if (prenomEl && profil?.prenom) prenomEl.textContent = profil.prenom
-
-    const adminBtn = document.getElementById('nav-admin')
-    if (adminBtn) adminBtn.style.display = profil?.role === 'admin' ? '' : 'none'
 
     const logoutBtn = document.getElementById('btn-deconnexion')
     if (logoutBtn && !logoutBtn._bound) {

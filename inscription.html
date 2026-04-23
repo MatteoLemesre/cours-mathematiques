@@ -50,6 +50,12 @@
             </div>
 
             <div class="form-group">
+              <label for="nom">Nom</label>
+              <input type="text" id="nom" class="input" placeholder="Ton nom de famille"
+                     required autocomplete="family-name">
+            </div>
+
+            <div class="form-group">
               <label for="email">Adresse email</label>
               <input type="email" id="email" class="input" placeholder="ton@email.com"
                      required autocomplete="email" inputmode="email">
@@ -137,6 +143,7 @@
       alertBox.style.display = 'none'
 
       const prenom  = document.getElementById('prenom').value.trim()
+      const nom     = document.getElementById('nom').value.trim()
       const email   = document.getElementById('email').value.trim()
       const classe  = document.getElementById('classe').value
       const pwd     = document.getElementById('password').value
@@ -144,6 +151,7 @@
 
       /* Validations */
       if (!prenom)            return showError('Entre ton prénom.')
+      if (!nom)               return showError('Entre ton nom de famille.')
       if (!email)             return showError('Entre ton adresse email.')
       if (!classe)            return showError('Choisis ta classe.')
       if (pwd.length < 6)     return showError('Le mot de passe doit contenir au moins 6 caractères.')
@@ -156,7 +164,7 @@
         email,
         password: pwd,
         options: {
-          data: { prenom, classe } /* → raw_user_meta_data → trigger profils */
+          data: { prenom, nom, classe } /* → raw_user_meta_data → trigger profils */
         }
       })
 

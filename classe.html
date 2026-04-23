@@ -26,20 +26,6 @@
 
     .progress-section { padding: 1.5rem 0; }
 
-    .demo-banner {
-      background: rgba(0,102,255,.06);
-      border: 1px solid rgba(0,102,255,.2);
-      border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 2rem;
-    }
-    .demo-banner p { color: var(--text); font-size: .9375rem; line-height: 1.5; }
-
     .theme-group { margin-bottom: 2.5rem; }
     .theme-group-title {
       font-size: .8125rem;
@@ -129,9 +115,6 @@
           <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
         </div>
         <div id="nav-user" style="display:none;gap:.5rem;align-items:center;">
-          <span id="nav-prenom" style="font-size:.875rem;font-weight:500;color:var(--text-muted);"></span>
-          <a href="/profil" class="btn btn-ghost btn-sm">Profil</a>
-          <a href="/admin" class="btn btn-ghost btn-sm" id="nav-admin" style="display:none">Admin</a>
           <button id="btn-deconnexion" class="btn btn-secondary btn-sm">Déconnexion</button>
         </div>
       </div>
@@ -213,7 +196,7 @@
         window.setupNavbar(session, profil || {})
         await loadFull(session.user.id)
       } else {
-        await loadDemo()
+        window.location.replace('/connexion')
       }
     }
 
@@ -279,58 +262,6 @@
           </div>
         </div>`
       ).join('')
-    }
-
-    async function loadDemo () {
-      const { data: demo } = await sb
-        .from('cours')
-        .select('id,titre,slug,theme')
-        .eq('classe', classe)
-        .eq('est_publie', true)
-        .eq('est_demo', true)
-        .order('ordre')
-        .limit(1)
-        .single()
-
-      const { data: total } = await sb
-        .from('cours')
-        .select('id', { count: 'exact', head: true })
-        .eq('classe', classe)
-        .eq('est_publie', true)
-
-      const n = total?.length ?? '?'
-      document.getElementById('classe-subtitle').textContent = `${n} chapitres disponibles`
-
-      const area = document.getElementById('content-area')
-      area.innerHTML = `
-        <div class="demo-banner">
-          <p>👋 Tu consultes en mode démo. <strong>Inscris-toi gratuitement</strong> pour accéder aux ${n} chapitres de ${label}.</p>
-          <div style="display:flex;gap:.5rem;flex-shrink:0;">
-            <a href="/connexion" class="btn btn-secondary btn-sm">Connexion</a>
-            <a href="/inscription" class="btn btn-primary btn-sm">S'inscrire</a>
-          </div>
-        </div>
-        ${demo ? `
-        <div class="theme-group">
-          <div class="theme-group-title">
-            <span class="badge ${themeColor(demo.theme)}">${demo.theme}</span>
-            &nbsp;— Aperçu gratuit
-          </div>
-          <div class="chapitres-list">
-            <a href="/cours/${classe}/${demo.slug}" class="chapitre-card">
-              <div class="chapitre-card-info">
-                <div class="chapitre-card-title">${demo.titre}</div>
-                <div class="chapitre-card-meta">
-                  <span class="badge badge-green">Accès gratuit</span>
-                </div>
-              </div>
-              <span style="color:var(--accent);font-size:.875rem;font-weight:600;">Lire →</span>
-            </a>
-          </div>
-        </div>` : ''}
-        <div style="text-align:center;padding:2rem 0;color:var(--text-muted);font-size:.9rem;">
-          🔒 Les autres chapitres nécessitent un compte
-        </div>`
     }
 
     function showEmpty () {
