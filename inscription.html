@@ -169,6 +169,7 @@
       })
 
       if (error) {
+        console.error('[Supabase signUp error]', error)
         btnSubmit.disabled = false
         btnSubmit.textContent = 'Créer mon compte'
         if (error.message.includes('already registered')) {
