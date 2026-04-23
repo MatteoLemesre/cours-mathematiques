@@ -161,22 +161,20 @@
       btnSubmit.textContent = 'Création…'
 
       const { data, error } = await sb.auth.signUp({
-        email,
+        email: email,
         password: pwd,
         options: {
-          data: { prenom, nom, classe } /* → raw_user_meta_data → trigger profils */
+          data: { prenom, nom, classe }
         }
       })
 
+      console.log('data:', JSON.stringify(data))
+      console.log('error:', JSON.stringify(error))
+
       if (error) {
-        console.error('[Supabase signUp error]', error)
         btnSubmit.disabled = false
         btnSubmit.textContent = 'Créer mon compte'
-        if (error.message.includes('already registered')) {
-          showError('Cet email est déjà utilisé. <a href="/connexion">Se connecter</a> ?')
-        } else {
-          showError(error.message)
-        }
+        showError(error.message + ' — code: ' + (error.status || '') + ' — ' + (error.code || ''))
         return
       }
 
